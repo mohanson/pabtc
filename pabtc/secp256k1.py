@@ -13,7 +13,8 @@ class Fp:
     p = 0
 
     def __init__(self, x: int) -> None:
-        self.x = x % self.p
+        assert 0 <= x and x < self.p
+        self.x = x
 
     def __repr__(self) -> str:
         return f'Fp(0x{self.x:064x})'
@@ -41,10 +42,10 @@ class Fp:
         return self.__class__(pow(self.x, data, self.p))
 
     def __pos__(self) -> typing.Self:
-        return self
+        return self.__class__(self.x)
 
     def __neg__(self) -> typing.Self:
-        return self.__class__(self.p - self.x)
+        return self.__class__((self.p - self.x) % self.p)
 
     @classmethod
     def nil(cls) -> typing.Self:
@@ -148,7 +149,7 @@ class Pt:
         return self.__mul__(k ** -1)
 
     def __pos__(self) -> typing.Self:
-        return self
+        return Pt(self.x, +self.y)
 
     def __neg__(self) -> typing.Self:
         return Pt(self.x, -self.y)
