@@ -28,12 +28,11 @@ def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabt
 def verify(pubkey: pabtc.secp256k1.Pt, m: pabtc.secp256k1.Fr, r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr) -> bool:
     # https://www.secg.org/sec1-v2.pdf
     # 4.1.4 Verifying Operation
-    u1 = m / s
-    u2 = r / s
-    x = pabtc.secp256k1.G * u1 + pubkey * u2
-    assert x != pabtc.secp256k1.I
-    v = pabtc.secp256k1.Fr(x.x.x)
-    return v == r
+    a = m / s
+    b = r / s
+    R = pabtc.secp256k1.G * a + pubkey * b
+    assert R != pabtc.secp256k1.I
+    return r == pabtc.secp256k1.Fr(R.x.x)
 
 
 def pubkey(m: pabtc.secp256k1.Fr, r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr, v: int) -> pabtc.secp256k1.Pt:
@@ -44,8 +43,8 @@ def pubkey(m: pabtc.secp256k1.Fr, r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr, 
         x = pabtc.secp256k1.Fq(r.x)
     else:
         x = pabtc.secp256k1.Fq(r.x + pabtc.secp256k1.N)
-    y_y = x * x * x + pabtc.secp256k1.A * x + pabtc.secp256k1.B
-    y = y_y ** ((pabtc.secp256k1.P + 1) // 4)
+    z = x * x * x + pabtc.secp256k1.A * x + pabtc.secp256k1.B
+    y = z ** ((pabtc.secp256k1.P + 1) // 4)
     if v & 1 != y.x & 1:
         y = -y
     R = pabtc.secp256k1.Pt(x, y)
