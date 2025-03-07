@@ -24,8 +24,6 @@
 #
 # Reference implementation for Bech32/bech32 and segwit addresses.
 
-import typing
-
 CHARSET = 'qpzry9x8gf2tvdw0s3jn54khce6mua7l'
 CONST_0 = 1
 CONST_M = 0x2bc830a3
@@ -45,12 +43,12 @@ def bech32_polymod(data: bytearray) -> int:
     return chk
 
 
-def bech32_hrpconv(hrp: str) -> bytearray:
+def bech32_hrpconv(data: str) -> bytearray:
     # Expand the HRP into values for checksum computation.
     r = bytearray()
-    r.extend([ord(x) >> 5 for x in hrp])
+    r.extend([ord(x) >> 5 for x in data])
     r.append(0)
-    r.extend([ord(x) & 31 for x in hrp])
+    r.extend([ord(x) & 31 for x in data])
     return r
 
 
@@ -74,46 +72,6 @@ def bech32_re_arrange_5(data: bytearray) -> bytearray:
     return ret
 
 
-def bech32_create_checksum(hrp: str, ver: int, data: bytearray) -> bytearray:
-    hrpdata = bech32_hrpconv(hrp) + data
-    polymod = bech32_polymod(hrpdata + bytearray(6))
-    if ver == 0:
-        polymod = polymod ^ CONST_0
-    if ver >= 1:
-        polymod = polymod ^ CONST_M
-    return bytearray([(polymod >> 5 * (5 - i)) & 31 for i in range(6)])
-
-
-def bech32_verify_checksum(hrp: str, ver: int, data: bytearray) -> bool:
-    if ver == 0:
-        return bech32_polymod(bech32_hrpconv(hrp) + bytearray(data)) == CONST_0
-    if ver >= 1:
-        return bech32_polymod(bech32_hrpconv(hrp) + bytearray(data)) == CONST_M
-
-
-def bech32_decode(ver: int, bech: str) -> typing.Tuple[str, bytearray]:
-    # Validate a string, and determine HRP and data.
-    assert len(bech) <= 90
-    for c in bech:
-        assert ord(c) >= ord('!')
-        assert ord(c) <= ord('~')
-    bech = bech.lower()
-    pos = bech.rfind('1')
-    assert pos > 0
-    assert pos + 6 < len(bech)
-    for c in bech[pos+1:]:
-        assert c in CHARSET
-    hrp = bech[:pos]
-    data = bytearray([CHARSET.find(x) for x in bech[pos+1:]])
-    assert bech32_verify_checksum(hrp, ver, data)
-    return hrp, data[:-6]
-
-
-def bech32_encode(hrp: str, ver: int, data: bytearray) -> str:
-    datasum = data + bech32_create_checksum(hrp, ver, data)
-    return hrp + '1' + ''.join([CHARSET[d] for d in datasum])
-
-
 def bech32_re_arrange_8(data: bytearray) -> bytearray:
     # Re-arrange those bits into groups of 8 bits. Any incomplete group at the end MUST be 4 bits or less, MUST be all
     # zeroes, and is discarded.
@@ -134,10 +92,48 @@ def bech32_re_arrange_8(data: bytearray) -> bytearray:
     return ret
 
 
+def bech32_create_checksum(hrp: str, ver: int, data: bytearray) -> bytearray:
+    hrpdata = bech32_hrpconv(hrp) + data
+    polymod = bech32_polymod(hrpdata + bytearray(6))
+    if ver == 0:
+        polymod = polymod ^ CONST_0
+    if ver >= 1:
+        polymod = polymod ^ CONST_M
+    return bytearray([(polymod >> 5 * (5 - i)) & 31 for i in range(6)])
+
+
+def bech32_verify_checksum(hrp: str, ver: int, data: bytearray) -> bool:
+    if ver == 0:
+        return bech32_polymod(bech32_hrpconv(hrp) + bytearray(data)) == CONST_0
+    if ver >= 1:
+        return bech32_polymod(bech32_hrpconv(hrp) + bytearray(data)) == CONST_M
+
+
+def bech32_decode(hrp: str, ver: int, bech: str) -> bytearray:
+    # Validate a string, and determine HRP and data.
+    for c in bech:
+        assert ord(c) >= ord('!')
+        assert ord(c) <= ord('~')
+    bech = bech.lower()
+    pos = bech.rfind('1')
+    assert pos > 0
+    assert pos + 6 < len(bech)
+    for c in bech[pos+1:]:
+        assert c in CHARSET
+    assert hrp == bech[:pos]
+    data = bytearray([CHARSET.find(x) for x in bech[pos+1:]])
+    assert bech32_verify_checksum(hrp, ver, data)
+    return data[:-6]
+
+
+def bech32_encode(hrp: str, ver: int, data: bytearray) -> str:
+    datasum = data + bech32_create_checksum(hrp, ver, data)
+    return hrp + '1' + ''.join([CHARSET[d] for d in datasum])
+
+
 def decode(hrp: str, ver: int, addr: str) -> bytearray:
     # Decode a segwit address.
-    pre, data = bech32_decode(ver, addr)
-    assert pre == hrp
+    data = bech32_decode(hrp, ver, addr)
     assert ver == data[0]
     return bech32_re_arrange_8(data[1:])
 
