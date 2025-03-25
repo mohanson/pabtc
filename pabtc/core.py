@@ -59,7 +59,7 @@ class PriKey:
     def json(self) -> typing.Dict:
         # Convert the private key to json representation.
         return {
-            'n': f'0x{self.n:064x}',
+            'n': f'{self.n:064x}',
         }
 
     def pubkey(self):
@@ -136,8 +136,8 @@ class PubKey:
     def json(self) -> typing.Dict:
         # Convert the public key to json representation.
         return {
-            'x': f'0x{self.x:064x}',
-            'y': f'0x{self.y:064x}'
+            'x': f'{self.x:064x}',
+            'y': f'{self.y:064x}'
         }
 
     def pt(self) -> pabtc.secp256k1.Pt:
@@ -338,7 +338,7 @@ class OutPoint:
 
     def json(self) -> typing.Dict:
         return {
-            'txid': f'0x{self.txid.hex()}',
+            'txid': self.txid.hex(),
             'vout': self.vout,
         }
 
@@ -382,9 +382,9 @@ class TxIn:
     def json(self) -> typing.Dict:
         return {
             'out_point': self.out_point.json(),
-            'script_sig': f'0x{self.script_sig.hex()}',
+            'script_sig': self.script_sig.hex(),
             'sequence': self.sequence,
-            'witness': [f'0x{e.hex()}' for e in self.witness],
+            'witness': [e.hex() for e in self.witness],
         }
 
 
@@ -410,7 +410,7 @@ class TxOut:
     def json(self) -> typing.Dict:
         return {
             'value': self.value,
-            'script_pubkey': f'0x{self.script_pubkey.hex()}',
+            'script_pubkey': self.script_pubkey.hex(),
         }
 
 
