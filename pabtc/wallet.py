@@ -35,14 +35,14 @@ class Utxo:
         self.out_point = out_point
         self.out = out
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return all([
             self.out_point == other.out_point,
             self.out == other.out,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         return {

@@ -41,11 +41,11 @@ class PriKey:
     def __init__(self, n: int) -> None:
         self.n = n
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return self.n == other.n
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def hex(self) -> str:
         # Convert the private key to hex representation.
@@ -124,14 +124,14 @@ class PubKey:
         self.x = x
         self.y = y
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return all([
             self.x == other.x,
             self.y == other.y,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def json(self) -> typing.Dict:
         # Convert the public key to json representation.
@@ -324,14 +324,14 @@ class OutPoint:
         self.txid = txid
         self.vout = vout
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return all([
             self.txid == other.txid,
             self.vout == other.vout,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def copy(self) -> typing.Self:
         return OutPoint(self.txid.copy(), self.vout)
@@ -365,9 +365,6 @@ class TxIn:
         self.sequence = sequence
         self.witness = witness
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return all([
             self.out_point == other.out_point,
@@ -375,6 +372,9 @@ class TxIn:
             self.sequence == other.sequence,
             self.witness == other.witness,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def copy(self) -> typing.Self:
         return TxIn(self.out_point.copy(), self.script_sig.copy(), self.sequence, [e.copy() for e in self.witness])
@@ -395,14 +395,14 @@ class TxOut:
         self.value = value
         self.script_pubkey = script_pubkey
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return all([
             self.value == other.value,
             self.script_pubkey == other.script_pubkey,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def copy(self) -> typing.Self:
         return TxOut(self.value, self.script_pubkey.copy())
@@ -423,9 +423,6 @@ class Transaction:
         self.vout = vout
         self.locktime = locktime
 
-    def __repr__(self) -> str:
-        return json.dumps(self.json())
-
     def __eq__(self, other) -> bool:
         return all([
             self.version == other.version,
@@ -433,6 +430,9 @@ class Transaction:
             self.vout == other.vout,
             self.locktime == other.locktime,
         ])
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
 
     def copy(self) -> typing.Self:
         return Transaction(self.version, [i.copy() for i in self.vin], [o.copy() for o in self.vout], self.locktime)
