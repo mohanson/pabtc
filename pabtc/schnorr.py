@@ -1,5 +1,5 @@
 import hashlib
-import random
+import secrets
 import typing
 import pabtc.secp256k1
 
@@ -31,7 +31,7 @@ def hash(name: str, data: bytearray) -> bytearray:
 def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabtc.secp256k1.Pt, pabtc.secp256k1.Fr]:
     prikey = prikey_implicit(prikey)
     pubkey = pabtc.secp256k1.G * prikey
-    k = prikey_implicit(pabtc.secp256k1.Fr(random.randint(0, pabtc.secp256k1.N)))
+    k = prikey_implicit(pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N))))
     r = pabtc.secp256k1.G * k
     e_data = bytearray(r.x.x.to_bytes(32) + pubkey.x.x.to_bytes(32) + m.x.to_bytes(32))
     e_hash = hash('BIP0340/challenge', e_data)

@@ -1,4 +1,5 @@
 import random
+import secrets
 import string
 import pabtc
 
@@ -92,8 +93,8 @@ def test_compact_size():
 
 def test_der():
     for _ in range(256):
-        r0 = pabtc.secp256k1.Fr(random.randint(0, pabtc.secp256k1.N - 1))
-        s0 = pabtc.secp256k1.Fr(random.randint(0, pabtc.secp256k1.N - 1))
+        r0 = pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N)))
+        s0 = pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N)))
         r1, s1 = pabtc.core.der_decode(pabtc.core.der_encode(r0, s0))
         assert r0 == r1
         assert s0 == s1
@@ -113,7 +114,7 @@ def test_hash160():
 
 def test_message():
     for _ in range(4):
-        prikey = pabtc.core.PriKey(random.randint(0, pabtc.secp256k1.N))
+        prikey = pabtc.core.PriKey.random()
         pubkey = prikey.pubkey()
         msg = pabtc.core.Message(''.join(random.choice(string.ascii_letters) for _ in range(random.randint(0, 1024))))
         sig = msg.sign(prikey)
