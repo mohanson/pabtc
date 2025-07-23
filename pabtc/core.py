@@ -4,6 +4,7 @@ import itertools
 import math
 import io
 import json
+import secrets
 import typing
 import pabtc.base58
 import pabtc.bech32
@@ -66,6 +67,10 @@ class PriKey:
         # Get the ecdsa public key corresponding to the private key.
         pubkey = pabtc.secp256k1.G * pabtc.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)
+
+    @classmethod
+    def random(cls) -> typing.Self:
+        return PriKey(max(1, secrets.randbelow(pabtc.secp256k1.N)))
 
     def sign_ecdsa(self, data: bytearray) -> typing.Tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr, int]:
         # Sign a 32-byte data segment, returns the signature.

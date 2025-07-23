@@ -46,6 +46,18 @@ $ python example/message.py --prikey 1 --msg pybtc --sig ICvzXjwjJVMilSGyMqwlqMT
 # True
 ```
 
+**example/satoshi_nakamoto.py**
+
+Brute-forcing the private key of Satoshi Nakamoto's address.
+
+```sh
+$ python example/satoshi_nakamoto.py
+# {"n": "317fcdd61ca488d52b82735e00247d16954c4b60b54346c04b57f0a0c87ce613"} 17LMG7Cy8SrYTVoVuDHh3bgBD5pt8vh6kn
+# {"n": "367bed0a65a9b46dd37509978e7bf85d25a54e1d41d8f4c777e04eb0607a1f46"} 1GJLb6iM3q1DuimVPm4GiAa5QJwU8zv3h9
+# ...
+# {"n": "****************************************************************"} 1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa
+# Oh my god, you did it!
+```
 
 **example/taproot.py**
 
