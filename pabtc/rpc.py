@@ -2,15 +2,17 @@ import decimal
 import itertools
 import random
 import requests
-import time
 import typing
 import pabtc.config
+import pabtc.rate
 
 # Doc: https://developer.bitcoin.org/reference/rpc/
 
 
 def call(method: str, params: typing.List[typing.Any]) -> typing.Any:
-    r = requests.post(pabtc.config.current.rpc.addr, json={
+    call.rate = getattr(call, 'rate', pabtc.rate.Limits(pabtc.config.current.rpc.qps, 1))
+    call.rate.wait(1)
+    r = requests.post(pabtc.config.current.rpc.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
         'method': method,
@@ -31,7 +33,6 @@ def wait(txid: str):
         r = get_raw_transaction(txid)
         if r['in_active_chain']:
             break
-        time.sleep(1)
 
 # =============================================================================
 # Blockchain RPCs

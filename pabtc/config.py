@@ -14,7 +14,8 @@ class ObjectDict(dict):
 
 develop = ObjectDict({
     'rpc': ObjectDict({
-        'addr': 'http://127.0.0.1:18443',
+        'url': 'http://127.0.0.1:18443',
+        'qps': 32,
         'username': 'user',
         'password': 'pass',
     }),
@@ -28,7 +29,8 @@ develop = ObjectDict({
 
 mainnet = ObjectDict({
     'rpc': ObjectDict({
-        'addr': 'https://bitcoin.drpc.org/',
+        'url': 'https://bitcoin.drpc.org/',
+        'qps': 2,
         'username': '',
         'password': '',
     }),
@@ -42,7 +44,8 @@ mainnet = ObjectDict({
 
 testnet = ObjectDict({
     'rpc': ObjectDict({
-        'addr': 'https://bitcoin-testnet.drpc.org/',
+        'url': 'https://bitcoin-testnet.drpc.org/',
+        'qps': 2,
         'username': '',
         'password': '',
     }),
