@@ -4,6 +4,7 @@ from . import config
 from . import core
 from . import denomination
 from . import ecdsa
+from . import objectdict
 from . import opcode
 from . import rate
 from . import ripemd160
