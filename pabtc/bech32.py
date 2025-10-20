@@ -107,6 +107,7 @@ def bech32_verify_checksum(hrp: str, ver: int, data: bytearray) -> bool:
         return bech32_polymod(bech32_hrpconv(hrp) + bytearray(data)) == CONST_0
     if ver >= 1:
         return bech32_polymod(bech32_hrpconv(hrp) + bytearray(data)) == CONST_M
+    return False
 
 
 def bech32_decode(hrp: str, ver: int, bech: str) -> bytearray:

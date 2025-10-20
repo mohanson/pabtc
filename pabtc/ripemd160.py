@@ -77,6 +77,7 @@ def function(x: int, y: int, z: int, i: int) -> int:
         return (x & z) | (y & ~z)
     if i == 4:
         return x ^ (y | ~z)
+    raise Exception('unreachable')
 
 
 def compress(state: typing.List[int], block: typing.List[int]):
@@ -127,7 +128,7 @@ class Ripemd160:
             full_block = self.cache[0x00:0x40]
             self.cache = self.cache[0x40:]
             # Process full 64-byte blocks in the input.
-            compress(self.state, full_block)
+            compress(self.state, list(full_block))
         return self
 
     def digest(self) -> bytearray:

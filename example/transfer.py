@@ -21,6 +21,7 @@ if args.net == 'testnet':
 accept_script = pabtc.core.script_pubkey(args.to)
 accept_value = int(args.value * pabtc.denomination.bitcoin)
 prikey = int(args.prikey, 0)
+wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(prikey))
 if args.script_type == 'p2pkh':
     wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(prikey))
 if args.script_type == 'p2sh-p2wpkh':

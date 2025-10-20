@@ -301,13 +301,12 @@ class Tp2tr:
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, bytearray())
             s = output_prikey.sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness[0] = s
-        return tx
 
     def txin(self, op: pabtc.core.OutPoint) -> pabtc.core.TxIn:
         return pabtc.core.TxIn(op, bytearray(), 0xffffffff, [bytearray(65)])
 
 
-T = Tp2pkh | Tp2shp2ms | Tp2shp2wpkh | Tp2wpkh | Tp2tr
+T = Tp2pkh | Tp2shp2ms | Tp2shp2wpkh | Tp2wpkh | Tp2tr | typing.Any
 
 
 class Wallet:

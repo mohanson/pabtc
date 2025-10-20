@@ -53,7 +53,7 @@ class PriKey:
         return self.n.to_bytes(32).hex()
 
     @classmethod
-    def hex_decode(cls, data: str) -> typing.Self:
+    def hex_decode(cls, data: str) -> PriKey:
         # Convert the hex representation to private key.
         return PriKey(int.from_bytes(bytearray.fromhex(data)))
 
@@ -69,7 +69,7 @@ class PriKey:
         return PubKey(pubkey.x.x, pubkey.y.x)
 
     @classmethod
-    def random(cls) -> typing.Self:
+    def random(cls) -> PriKey:
         return PriKey(max(1, secrets.randbelow(pabtc.secp256k1.N)))
 
     def sign_ecdsa(self, data: bytearray) -> typing.Tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr, int]:
@@ -112,12 +112,12 @@ class PriKey:
         return pabtc.base58.encode(data)
 
     @classmethod
-    def wif_decode(cls, data: str) -> typing.Self:
+    def wif_decode(cls, data: str) -> PriKey:
         # Convert the wallet import format to private key. This is the format supported by most third-party wallets.
-        data = pabtc.base58.decode(data)
-        assert data[0] == pabtc.config.current.prefix.wif
-        assert hash256(data[:-4])[:4] == data[-4:]
-        return PriKey(int.from_bytes(data[1:33]))
+        b = pabtc.base58.decode(data)
+        assert b[0] == pabtc.config.current.prefix.wif
+        assert hash256(b[:-4])[:4] == b[-4:]
+        return PriKey(int.from_bytes(b[1:33]))
 
 
 class PubKey:
@@ -150,7 +150,7 @@ class PubKey:
         return pabtc.secp256k1.Pt(pabtc.secp256k1.Fq(self.x), pabtc.secp256k1.Fq(self.y))
 
     @classmethod
-    def pt_decode(cls, data: pabtc.secp256k1.Pt) -> typing.Self:
+    def pt_decode(cls, data: pabtc.secp256k1.Pt) -> PubKey:
         # Convert the secp256k1 point to public key.
         return PubKey(data.x.x, data.y.x)
 
@@ -166,7 +166,7 @@ class PubKey:
         return r
 
     @classmethod
-    def sec_decode(cls, data: bytearray) -> typing.Self:
+    def sec_decode(cls, data: bytearray) -> PubKey:
         # Convert the standards for efficient cryptography representation to public key.
         p = data[0]
         assert p in [0x02, 0x03, 0x04]
@@ -338,7 +338,7 @@ class OutPoint:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def copy(self) -> typing.Self:
+    def copy(self) -> OutPoint:
         return OutPoint(self.txid.copy(), self.vout)
 
     def json(self) -> typing.Dict:
@@ -381,7 +381,7 @@ class TxIn:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def copy(self) -> typing.Self:
+    def copy(self) -> TxIn:
         return TxIn(self.out_point.copy(), self.script_sig.copy(), self.sequence, [e.copy() for e in self.witness])
 
     def json(self) -> typing.Dict:
@@ -409,7 +409,7 @@ class TxOut:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def copy(self) -> typing.Self:
+    def copy(self) -> TxOut:
         return TxOut(self.value, self.script_pubkey.copy())
 
     def json(self) -> typing.Dict:
@@ -439,7 +439,7 @@ class Transaction:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def copy(self) -> typing.Self:
+    def copy(self) -> Transaction:
         return Transaction(self.version, [i.copy() for i in self.vin], [o.copy() for o in self.vout], self.locktime)
 
     def digest_legacy(self, i: int, hash_type: int, script_code: bytearray) -> bytearray:
@@ -665,7 +665,7 @@ class Transaction:
             return self.serialize_legacy()
 
     @classmethod
-    def serialize_decode_legacy(cls, data: bytearray) -> typing.Self:
+    def serialize_decode_legacy(cls, data: bytearray) -> Transaction:
         reader = io.BytesIO(data)
         tx = Transaction(0, [], [], 0)
         tx.version = int.from_bytes(reader.read(4), 'little')
@@ -683,7 +683,7 @@ class Transaction:
         return tx
 
     @classmethod
-    def serialize_decode_segwit(cls, data: bytearray) -> typing.Self:
+    def serialize_decode_segwit(cls, data: bytearray) -> Transaction:
         reader = io.BytesIO(data)
         tx = Transaction(0, [], [], 0)
         tx.version = int.from_bytes(reader.read(4), 'little')
@@ -705,7 +705,7 @@ class Transaction:
         return tx
 
     @classmethod
-    def serialize_decode(cls, data: bytearray) -> typing.Self:
+    def serialize_decode(cls, data: bytearray) -> Transaction:
         if data[4] == 0x00:
             return Transaction.serialize_decode_segwit(data)
         else:
@@ -792,17 +792,17 @@ def der_encode(r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr) -> bytearray:
     # DER encoding: https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#der-encoding
     body = bytearray()
     body.append(0x02)
-    r = r.x.to_bytes(32).lstrip(bytearray([0x00]))
-    if r[0] & 0x80:
-        r = bytearray([0x00]) + r
-    body.append(len(r))
-    body.extend(r)
+    rbuf = bytearray(r.x.to_bytes(32)).lstrip(bytearray([0x00]))
+    if rbuf[0] & 0x80:
+        rbuf = bytearray([0x00]) + rbuf
+    body.append(len(rbuf))
+    body.extend(rbuf)
     body.append(0x02)
-    s = s.x.to_bytes(32).lstrip(bytearray([0x00]))
-    if s[0] & 0x80:
-        s = bytearray([0x00]) + s
-    body.append(len(s))
-    body.extend(s)
+    sbuf = bytearray(s.x.to_bytes(32)).lstrip(bytearray([0x00]))
+    if sbuf[0] & 0x80:
+        sbuf = bytearray([0x00]) + sbuf
+    body.append(len(sbuf))
+    body.extend(sbuf)
     head = bytearray([0x30, len(body)])
     return head + body
 
@@ -867,11 +867,11 @@ class Message:
 
     def pubkey(self, sig: str) -> PubKey:
         m = pabtc.secp256k1.Fr(int.from_bytes(self.hash()))
-        sig = base64.b64decode(sig)
-        assert sig[0] >= 27
-        v = (sig[0] - 27) & 3
-        r = pabtc.secp256k1.Fr(int.from_bytes(sig[0x01:0x21]))
-        s = pabtc.secp256k1.Fr(int.from_bytes(sig[0x21:0x41]))
+        b = base64.b64decode(sig)
+        assert b[0] >= 27
+        v = (b[0] - 27) & 3
+        r = pabtc.secp256k1.Fr(int.from_bytes(b[0x01:0x21]))
+        s = pabtc.secp256k1.Fr(int.from_bytes(b[0x21:0x41]))
         return PubKey.pt_decode(pabtc.ecdsa.pubkey(m, r, s, v))
 
 

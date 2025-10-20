@@ -147,14 +147,14 @@ def test_pubkey_sec():
 
 
 def test_pubkey_sec_read():
-    pubkey = pabtc.core.PubKey.sec_decode(bytes.fromhex(''.join([
+    pubkey = pabtc.core.PubKey.sec_decode(bytearray.fromhex(''.join([
         '04',
         '79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798',
         '483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8'
     ])))
     assert pubkey.x == 0x79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798
     assert pubkey.y == 0x483ada7726a3c4655da4fbfc0e1108a8fd17b448a68554199c47d08ffb10d4b8
-    pubkey = pabtc.core.PubKey.sec_decode(bytes.fromhex(''.join([
+    pubkey = pabtc.core.PubKey.sec_decode(bytearray.fromhex(''.join([
         '02',
         '79be667ef9dcbbac55a06295ce870b07029bfcdb2dce28d959f2815b16f81798',
     ])))
@@ -192,5 +192,5 @@ def test_transaction():
 
 def test_witness():
     for _ in range(256):
-        wits = [random.randbytes(random.randint(0, 256)) for _ in range(random.randint(0, 256))]
+        wits = [bytearray(random.randbytes(random.randint(0, 256))) for _ in range(random.randint(0, 256))]
         assert pabtc.core.witness_decode(pabtc.core.witness_encode(wits)) == wits

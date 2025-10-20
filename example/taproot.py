@@ -35,12 +35,14 @@ class Tp2trp2pk:
             self.prefix = 0xc0
 
     def sign(self, tx: pabtc.core.Transaction):
+        assert isinstance(mast.l, pabtc.core.TapLeaf)
         for i, e in enumerate(tx.vin):
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, mast.l.script)
             s = pabtc.core.PriKey(2).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness[0] = s
 
     def txin(self, op: pabtc.core.OutPoint):
+        assert isinstance(mast.l, pabtc.core.TapLeaf)
         return pabtc.core.TxIn(op, bytearray(), 0xffffffff, [
             bytearray(65),
             mast.l.script,
@@ -62,12 +64,14 @@ class Tp2trp2ms:
             self.prefix = 0xc0
 
     def sign(self, tx: pabtc.core.Transaction):
+        assert isinstance(mast.r, pabtc.core.TapLeaf)
         for i, e in enumerate(tx.vin):
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, mast.r.script)
             e.witness[0] = pabtc.core.PriKey(4).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness[1] = pabtc.core.PriKey(3).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
 
     def txin(self, op: pabtc.core.OutPoint):
+        assert isinstance(mast.r, pabtc.core.TapLeaf)
         return pabtc.core.TxIn(op, bytearray(), 0xffffffff, [
             bytearray(65),
             bytearray(65),
@@ -79,7 +83,8 @@ class Tp2trp2ms:
 mate = pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(1))
 pabtc.rpc.generate_to_address(10, mate.addr)
 
-user_p2tr = pabtc.wallet.Wallet(pabtc.wallet.Tp2tr(1, mast.hash))
+user_p2tr_signer = pabtc.wallet.Tp2tr(1, mast.hash)
+user_p2tr = pabtc.wallet.Wallet(user_p2tr_signer)
 pabtc.rpc.import_descriptors([{
     'desc': pabtc.rpc.get_descriptor_info(f'addr({user_p2tr.addr})')['descriptor'],
     'timestamp': 'now',
@@ -96,7 +101,7 @@ print('main: spending by key path done')
 # Spending by script path: pay to public key.
 mate.transfer(user_p2tr.script, 1 * pabtc.denomination.bitcoin)
 assert user_p2tr.balance() == pabtc.denomination.bitcoin
-user_p2pk = pabtc.wallet.Wallet(Tp2trp2pk(user_p2tr.signer.pubkey))
+user_p2pk = pabtc.wallet.Wallet(Tp2trp2pk(user_p2tr_signer.pubkey))
 print('main: spending by script path p2pk')
 user_p2pk.transfer_all(mate.script)
 assert user_p2tr.balance() == 0
@@ -105,7 +110,7 @@ print('main: spending by script path p2pk done')
 # Spending by script path: pay to 2-of-2 multisig script.
 mate.transfer(user_p2tr.script, 1 * pabtc.denomination.bitcoin)
 assert user_p2tr.balance() == pabtc.denomination.bitcoin
-user_p2ms = pabtc.wallet.Wallet(Tp2trp2ms(user_p2tr.signer.pubkey))
+user_p2ms = pabtc.wallet.Wallet(Tp2trp2ms(user_p2tr_signer.pubkey))
 print('main: spending by script path p2ms')
 user_p2ms.transfer_all(mate.script)
 assert user_p2tr.balance() == 0

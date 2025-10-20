@@ -10,8 +10,9 @@ import pabtc.rate
 
 
 def call(method: str, params: typing.List[typing.Any]) -> typing.Any:
-    call.rate = getattr(call, 'rate', pabtc.rate.Limits(pabtc.config.current.rpc.qps, 1))
-    call.rate.wait(1)
+    if not hasattr(call, 'rate'):
+        setattr(call, 'rate', pabtc.rate.Limits(pabtc.config.current.rpc.qps, 1))
+    getattr(call, 'rate').wait(1)
     r = requests.post(pabtc.config.current.rpc.url, json={
         'id': random.randint(0x00000000, 0xffffffff),
         'jsonrpc': '2.0',
