@@ -63,7 +63,7 @@ class PriKey:
             'n': f'{self.n:064x}',
         }
 
-    def pubkey(self):
+    def pubkey(self) -> PubKey:
         # Get the ecdsa public key corresponding to the private key.
         pubkey = pabtc.secp256k1.G * pabtc.secp256k1.Fr(self.n)
         return PubKey(pubkey.x.x, pubkey.y.x)

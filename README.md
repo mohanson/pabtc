@@ -36,7 +36,7 @@ $ python example/addr.py --net mainnet --prikey 1
 
 **example/message.py**
 
-Sign a message with the private key and verify it.
+Sign a message with the private key and verify it. Actually, only the public key is needed to verify the signature, but to simplify the process, this example will still ask you to provide the private key and then calculate the public key from the private key.
 
 ```sh
 $ python example/message.py --prikey 1 --msg pybtc

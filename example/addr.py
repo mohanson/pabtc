@@ -5,7 +5,7 @@ import pabtc
 
 parser = argparse.ArgumentParser()
 parser.add_argument('--net', type=str, choices=['develop', 'mainnet', 'testnet'], default='develop')
-parser.add_argument('--prikey', type=str, help='private key')
+parser.add_argument('--prikey', type=str, required=True, help='private key')
 args = parser.parse_args()
 
 if args.net == 'develop':

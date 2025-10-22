@@ -22,7 +22,7 @@ mast = pabtc.core.TapNode(
 
 
 class Tp2trp2pk:
-    def __init__(self, pubkey: pabtc.core.PubKey):
+    def __init__(self, pubkey: pabtc.core.PubKey) -> None:
         self.pubkey = pubkey
         self.addr = pabtc.core.address_p2tr(pubkey, mast.hash)
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
@@ -34,14 +34,14 @@ class Tp2trp2pk:
         else:
             self.prefix = 0xc0
 
-    def sign(self, tx: pabtc.core.Transaction):
+    def sign(self, tx: pabtc.core.Transaction) -> None:
         assert isinstance(mast.l, pabtc.core.TapLeaf)
         for i, e in enumerate(tx.vin):
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, mast.l.script)
             s = pabtc.core.PriKey(2).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness[0] = s
 
-    def txin(self, op: pabtc.core.OutPoint):
+    def txin(self, op: pabtc.core.OutPoint) -> pabtc.core.TxIn:
         assert isinstance(mast.l, pabtc.core.TapLeaf)
         return pabtc.core.TxIn(op, bytearray(), 0xffffffff, [
             bytearray(65),
@@ -51,7 +51,7 @@ class Tp2trp2pk:
 
 
 class Tp2trp2ms:
-    def __init__(self, pubkey: pabtc.core.PubKey):
+    def __init__(self, pubkey: pabtc.core.PubKey) -> None:
         self.pubkey = pubkey
         self.addr = pabtc.core.address_p2tr(pubkey, mast.hash)
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
@@ -63,14 +63,14 @@ class Tp2trp2ms:
         else:
             self.prefix = 0xc0
 
-    def sign(self, tx: pabtc.core.Transaction):
+    def sign(self, tx: pabtc.core.Transaction) -> None:
         assert isinstance(mast.r, pabtc.core.TapLeaf)
         for i, e in enumerate(tx.vin):
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, mast.r.script)
             e.witness[0] = pabtc.core.PriKey(4).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness[1] = pabtc.core.PriKey(3).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
 
-    def txin(self, op: pabtc.core.OutPoint):
+    def txin(self, op: pabtc.core.OutPoint) -> pabtc.core.TxIn:
         assert isinstance(mast.r, pabtc.core.TapLeaf)
         return pabtc.core.TxIn(op, bytearray(), 0xffffffff, [
             bytearray(65),
