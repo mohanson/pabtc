@@ -148,8 +148,9 @@ class Ripemd160:
         return r
 
 
-def ripemd160(data: bytearray | bytes = b'') -> Ripemd160:
+def ripemd160(data: bytearray = bytearray()) -> Ripemd160:
     # Returns a ripemd160 hash object; optionally initialized with a string.
+    assert isinstance(data, bytearray)
     hash = Ripemd160()
     hash.update(data)
     return hash

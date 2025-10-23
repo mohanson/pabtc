@@ -25,7 +25,7 @@ sighash_anyone_can_pay = 0x80
 
 
 def hash160(data: bytearray) -> bytearray:
-    return bytearray(pabtc.ripemd160.ripemd160(hashlib.sha256(data).digest()).digest())
+    return bytearray(pabtc.ripemd160.ripemd160(bytearray(hashlib.sha256(data).digest())).digest())
 
 
 def hash256(data: bytearray) -> bytearray:
