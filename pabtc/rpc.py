@@ -48,8 +48,8 @@ def get_block(blockhash: str) -> typing.Dict:
     return call('getblock', [blockhash])
 
 
-def get_block_chain_info():
-    pass
+def get_block_chain_info() -> typing.Dict:
+    return call('getblockchaininfo', [])
 
 
 def get_block_count() -> int:
@@ -172,8 +172,8 @@ def uptime():
 # =============================================================================
 
 
-def generate_block():
-    pass
+def generate_block(output: str, transactions: typing.List[str]) -> typing.Dict:
+    return call('generateblock', [output, transactions])
 
 
 def generate_to_address(nblocks: int, address: str) -> typing.List[str]:
