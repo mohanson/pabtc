@@ -368,16 +368,16 @@ def get_index_info():
     pass
 
 
-def sign_message_with_privkey():
-    pass
+def sign_message_with_privkey(prikey: str, message: str) -> str:
+    return call('signmessagewithprivkey', [prikey, message])
 
 
 def validate_address():
     pass
 
 
-def verify_message():
-    pass
+def verify_message(address: str, signature: str, message: str) -> bool:
+    return call('verifymessage', [address, signature, message])
 
 # =============================================================================
 # Wallet RPCs
