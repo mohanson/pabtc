@@ -886,7 +886,7 @@ class TapLeaf:
 
 
 class TapNode:
-    def __init__(self, l: typing.Self | TapLeaf, r: typing.Self | TapLeaf) -> None:
+    def __init__(self, l: TapNode | TapLeaf, r: TapNode | TapLeaf) -> None:
         if l.hash < r.hash:
             self.hash = hashtag('TapBranch', l.hash + r.hash)
         else:
