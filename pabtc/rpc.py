@@ -344,8 +344,8 @@ def utxo_update_psbt():
 # =============================================================================
 
 
-def create_multisig():
-    pass
+def create_multisig(nrequired: int, keys: typing.List[str], address_type: str) -> typing.Dict:
+    return call('createmultisig', [nrequired, keys, address_type])
 
 
 def derive_addresses():
