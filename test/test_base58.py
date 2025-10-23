@@ -6,12 +6,14 @@ def test_base58_encode():
     assert pabtc.base58.encode(bytearray.fromhex('00')) == '1'
     assert pabtc.base58.encode(bytearray.fromhex('626262')) == 'a3gV'
     assert pabtc.base58.encode(bytearray.fromhex('636363')) == 'aPEr'
+    assert pabtc.base58.encode(bytearray(b'Hello World!')) == '2NEpo7TZRRrLZSi2U'
 
 
 def test_base58_decode():
     assert pabtc.base58.decode('1') == bytearray.fromhex('00')
     assert pabtc.base58.decode('a3gV') == bytearray.fromhex('626262')
     assert pabtc.base58.decode('aPEr') == bytearray.fromhex('636363')
+    assert pabtc.base58.decode('2NEpo7TZRRrLZSi2U') == bytearray(b'Hello World!')
 
 
 def test_base58_random():
