@@ -331,7 +331,7 @@ class Wallet:
         accept_script = script
         change_value = 0
         change_script = self.script
-        fr = pabtc.rpc.estimates_mart_fee(6)['feerate'] * pabtc.denomination.bitcoin
+        fr = pabtc.rpc.estimate_smart_fee(6)['feerate'] * pabtc.denomination.bitcoin
         fr = int(fr.to_integral_exact()) // 1000
         tx = pabtc.core.Transaction(2, [], [], 0)
         tx.vout.append(pabtc.core.TxOut(accept_value, accept_script))
@@ -356,7 +356,7 @@ class Wallet:
         sender_value = 0
         accept_value = 0
         accept_script = script
-        fr = pabtc.rpc.estimates_mart_fee(6)['feerate'] * pabtc.denomination.bitcoin
+        fr = pabtc.rpc.estimate_smart_fee(6)['feerate'] * pabtc.denomination.bitcoin
         fr = int(fr.to_integral_exact()) // 1000
         tx = pabtc.core.Transaction(2, [], [], 0)
         tx.vout.append(pabtc.core.TxOut(accept_value, accept_script))

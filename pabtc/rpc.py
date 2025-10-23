@@ -352,7 +352,7 @@ def derive_addresses():
     pass
 
 
-def estimates_mart_fee(conf_target: int) -> typing.Dict:
+def estimate_smart_fee(conf_target: int) -> typing.Dict:
     # A mock is required on RegTest to allow this RPC to return meaningful data.
     # See: https://github.com/bitcoin/bitcoin/issues/11500
     if pabtc.config.current == pabtc.config.develop:
