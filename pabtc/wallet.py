@@ -5,8 +5,8 @@ import pabtc.core
 import pabtc.denomination
 import pabtc.opcode
 import pabtc.rpc
-import pabtc.schnorr
 import pabtc.secp256k1
+
 
 class Analyzer:
     # Analyzer is a simple transaction analyzer to reject transactions that are obviously wrong.
@@ -130,7 +130,8 @@ class Tp2pkh:
 
     def sign(self, tx: pabtc.core.Transaction) -> None:
         for i, e in enumerate(tx.vin):
-            s = self.prikey.sign_ecdsa_der(tx.digest_legacy(i, pabtc.core.sighash_all, e.out_point.load().script_pubkey))
+            m = tx.digest_legacy(i, pabtc.core.sighash_all, e.out_point.load().script_pubkey)
+            s = self.prikey.sign_ecdsa_der(m)
             s.append(pabtc.core.sighash_all)
             e.script_sig = pabtc.core.script([
                 pabtc.opcode.op_pushdata(s),
