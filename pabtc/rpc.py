@@ -372,8 +372,8 @@ def sign_message_with_privkey(prikey: str, message: str) -> str:
     return call('signmessagewithprivkey', [prikey, message])
 
 
-def validate_address():
-    pass
+def validate_address(address: str) -> typing.Dict:
+    return call('validateaddress', [address])
 
 
 def verify_message(address: str, signature: str, message: str) -> bool:
