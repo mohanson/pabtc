@@ -271,72 +271,87 @@ def set_network_active(state: bool) -> bool:
 # =============================================================================
 
 
-def analyze_psbt():
-    pass
+def analyze_psbt(psbt: str) -> typing.Dict:
+    return call('analyzepsbt', [psbt])
 
 
-def combine_psbt():
-    pass
+def combine_psbt(txs: typing.List[str]) -> str:
+    return call('combinepsbt', [txs])
 
 
-def combine_raw_transaction():
-    pass
+def combine_raw_transaction(txs: typing.List[str]) -> str:
+    return call('combinerawtransaction', [txs])
 
 
-def convert_to_psbt():
-    pass
+def convert_to_psbt(hexstring: str, permitsigdata: bool = False) -> str:
+    return call('converttopsbt', [hexstring, permitsigdata])
 
 
-def create_psbt():
-    pass
+def create_psbt(
+    inputs: typing.List[typing.Dict],
+    outputs: typing.List[typing.Dict],
+    locktime: int = 0,
+    replaceable: bool = False,
+) -> str:
+    return call('createpsbt', [inputs, outputs, locktime, replaceable])
 
 
-def create_raw_transaction():
-    pass
+def create_raw_transaction(
+    inputs: typing.List[typing.Dict],
+    outputs: typing.List[typing.Dict],
+    locktime: int = 0,
+    replaceable: bool = False,
+) -> str:
+    return call('createrawtransaction', [inputs, outputs, locktime, replaceable])
 
 
-def decode_psbt():
-    pass
+def decode_psbt(psbt: str) -> typing.Dict:
+    return call('decodepsbt', [psbt])
 
 
 def decode_raw_transaction(tx: str) -> typing.Dict:
     return call('decoderawtransaction', [tx])
 
 
-def decode_script():
-    pass
+def decode_script(hexstring: str) -> typing.Dict:
+    return call('decodescript', [hexstring])
 
 
-def finalize_psbt():
-    pass
+def finalize_psbt(psbt: str, extract: bool = True) -> typing.Dict:
+    return call('finalizepsbt', [psbt, extract])
 
 
-def fund_raw_transaction():
-    pass
+def fund_raw_transaction(hexstring: str, options: typing.Optional[typing.Dict] = None) -> typing.Dict:
+    return call('fundrawtransaction', [hexstring, options])
 
 
 def get_raw_transaction(txid: str) -> typing.Dict:
-    return call('getrawtransaction', [txid])
+    return call('getrawtransaction', [txid, True])
 
 
-def join_psbts():
-    pass
+def join_psbts(txs: typing.List[str]) -> str:
+    return call('joinpsbts', [txs])
 
 
 def send_raw_transaction(tx: str) -> str:
     return call('sendrawtransaction', [tx])
 
 
-def sign_raw_transaction_with_key():
-    pass
+def sign_raw_transaction_with_key(
+    hexstring: str,
+    privkeys: typing.List[str],
+    prevtxs: typing.Optional[typing.List[typing.Dict]] = None,
+    sighashtype: str = 'ALL',
+) -> typing.Dict:
+    return call('signrawtransactionwithkey', [hexstring, privkeys, prevtxs, sighashtype])
 
 
-def test_mempool_accept():
-    pass
+def test_mempool_accept(rawtxs: typing.List[str]) -> typing.List[typing.Dict]:
+    return call('testmempoolaccept', [rawtxs])
 
 
-def utxo_update_psbt():
-    pass
+def utxo_update_psbt(psbt: str, descriptors: typing.Optional[typing.List[typing.Dict]] = None) -> str:
+    return call('utxoupdatepsbt', [psbt, descriptors])
 
 # =============================================================================
 # Util RPCs
@@ -347,8 +362,8 @@ def create_multisig(nrequired: int, keys: typing.List[str], address_type: str) -
     return call('createmultisig', [nrequired, keys, address_type])
 
 
-def derive_addresses():
-    pass
+def derive_addresses(descriptor: str, range: typing.Union[int, typing.List[int]]) -> typing.List[str]:
+    return call('deriveaddresses', [descriptor, range])
 
 
 def estimate_smart_fee(conf_target: int) -> typing.Dict:
@@ -363,8 +378,8 @@ def get_descriptor_info(descriptor: str) -> typing.Dict:
     return call('getdescriptorinfo', [descriptor])
 
 
-def get_index_info():
-    pass
+def get_index_info(index_name: typing.Optional[str] = None) -> typing.Dict:
+    return call('getindexinfo', [index_name])
 
 
 def sign_message_with_privkey(prikey: str, message: str) -> str:
