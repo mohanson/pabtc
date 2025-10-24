@@ -144,28 +144,28 @@ def verify_tx_out_proof(proof: str) -> typing.List[str]:
 # =============================================================================
 
 
-def get_memory_info():
-    pass
+def get_memory_info(mode: typing.Optional[str] = None) -> typing.Union[str, typing.Dict]:
+    return call('getmemoryinfo', [mode])
 
 
-def get_rpc_info():
-    pass
+def get_rpc_info() -> typing.Dict:
+    return call('getrpcinfo', [])
 
 
-def help():
-    pass
+def help() -> str:
+    return call('help', [])
 
 
-def logging():
-    pass
+def logging(include: typing.List[str], exclude: typing.List[str]) -> typing.Dict:
+    return call('logging', [include, exclude])
 
 
-def stop():
-    pass
+def stop() -> str:
+    return call('stop', [])
 
 
-def uptime():
-    pass
+def uptime() -> int:
+    return call('uptime', [])
 
 # =============================================================================
 # Generating RPCs
