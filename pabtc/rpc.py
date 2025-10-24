@@ -188,28 +188,28 @@ def generate_to_descriptor(nblocks: int, descriptor: str) -> typing.List[str]:
 # =============================================================================
 
 
-def get_block_template():
-    pass
+def get_block_template(template_request: typing.Dict) -> typing.Dict:
+    return call('getblocktemplate', [template_request])
 
 
-def get_mining_info():
-    pass
+def get_mining_info() -> typing.Dict:
+    return call('getmininginfo', [])
 
 
-def get_network_hashps():
-    pass
+def get_network_hashps(nblocks: typing.Optional[int] = None, height: typing.Optional[int] = None) -> decimal.Decimal:
+    return call('getnetworkhashps', [nblocks, height])
 
 
-def prioritise_transaction():
-    pass
+def prioritise_transaction(txid: str, fee_delta: int) -> bool:
+    return call('prioritise_transaction', [txid, 0, fee_delta])
 
 
-def submit_block():
-    pass
+def submit_block(hexdata: str) -> None:
+    return call('submitblock', [hexdata])
 
 
-def submit_header():
-    pass
+def submit_header(hexdata: str) -> None:
+    return call('submitheader', [hexdata])
 
 # =============================================================================
 # Network RPCs
