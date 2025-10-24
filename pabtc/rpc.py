@@ -84,60 +84,60 @@ def get_difficulty() -> decimal.Decimal:
     return call('getdifficulty', [])
 
 
-def get_mempool_ancestors():
-    pass
+def get_mempool_ancestors(txid: str) -> typing.List[str]:
+    return call('getmempoolancestors', [txid])
 
 
-def get_mempool_descendants():
-    pass
+def get_mempool_descendants(txid: str) -> typing.List[str]:
+    return call('getmempooldescendants', [txid])
 
 
-def get_mempool_entry():
-    pass
+def get_mempool_entry(txid: str) -> typing.Dict:
+    return call('getmempoolentry', [txid])
 
 
-def get_mempool_info():
-    pass
+def get_mempool_info() -> typing.Dict:
+    return call('getmempoolinfo', [])
 
 
-def get_raw_mempool():
-    pass
+def get_raw_mempool() -> typing.List[str]:
+    return call('getrawmempool', [])
 
 
 def get_tx_out(txid: str, vout: int) -> typing.Dict:
     return call('gettxout', [txid, vout])
 
 
-def get_tx_out_proof():
-    pass
+def get_tx_out_proof(txids: typing.List[str], blockhash: typing.Optional[str] = None) -> str:
+    return call('gettxoutproof', [txids, blockhash])
 
 
-def get_tx_out_set_info():
-    pass
+def get_tx_out_set_info(hash_type: typing.Optional[str] = None) -> typing.Dict:
+    return call('gettxoutsetinfo', [hash_type])
 
 
-def precious_block():
-    pass
+def precious_block(blockhash: str) -> None:
+    return call('preciousblock', [blockhash])
 
 
-def prune_blockchain():
-    pass
+def prune_blockchain(height: int) -> int:
+    return call('pruneblockchain', [height])
 
 
-def save_mempool():
-    pass
+def save_mempool() -> None:
+    return call('savemempool', [])
 
 
-def scan_tx_out_set():
-    pass
+def scan_tx_out_set(action: str, scanobjects: typing.List[str]) -> typing.Dict:
+    return call('scan_tx_out_set', [action, scanobjects])
 
 
-def verify_chain():
-    pass
+def verify_chain(checklevel: typing.Optional[int] = None, nblocks: typing.Optional[int] = None) -> bool:
+    return call('verifychain', [checklevel, nblocks])
 
 
-def verify_tx_out_proof():
-    pass
+def verify_tx_out_proof(proof: str) -> typing.List[str]:
+    return call('verifytxoutproof', [proof])
 
 # =============================================================================
 # Control RPCs
