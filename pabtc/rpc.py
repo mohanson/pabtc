@@ -44,8 +44,8 @@ def get_best_block_hash() -> str:
     return call('getbestblockhash', [])
 
 
-def get_block(blockhash: str) -> typing.Dict:
-    return call('getblock', [blockhash])
+def get_block(blockhash: str, verbosity: int = 1) -> typing.Dict:
+    return call('getblock', [blockhash, verbosity])
 
 
 def get_block_chain_info() -> typing.Dict:
@@ -56,28 +56,28 @@ def get_block_count() -> int:
     return call('getblockcount', [])
 
 
-def get_block_filter():
-    pass
+def get_block_filter(blockhash: str) -> typing.Dict:
+    return call('getblockfilter', [blockhash])
 
 
-def get_block_hash():
-    pass
+def get_block_hash(height: int) -> str:
+    return call('getblockhash', [height])
 
 
 def get_block_header(blockhash: str) -> typing.Dict:
-    return call('getblockheader', [blockhash, True])
+    return call('getblockheader', [blockhash])
 
 
-def get_block_stats():
-    pass
+def get_block_stats(hash_or_height: typing.Union[str, int]) -> typing.Dict:
+    return call('getblockstats', [hash_or_height])
 
 
-def get_chain_tips():
-    pass
+def get_chain_tips() -> typing.List[typing.Dict]:
+    return call('getchaintips', [])
 
 
-def get_chain_tx_stats():
-    pass
+def get_chain_tx_stats(nblocks: typing.Optional[int] = None, blockhash: typing.Optional[str] = None) -> typing.Dict:
+    return call('getchaintxstats', [nblocks, blockhash])
 
 
 def get_difficulty() -> decimal.Decimal:
