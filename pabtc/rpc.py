@@ -398,237 +398,339 @@ def verify_message(address: str, signature: str, message: str) -> bool:
 # =============================================================================
 
 
-def abandon_transaction():
-    pass
+def abandon_transaction(txid: str) -> None:
+    return call('abandontransaction', [txid])
 
 
-def abort_rescan():
-    pass
+def abort_rescan() -> bool:
+    return call('abortrescan', [])
 
 
-def add_multisig_address():
-    pass
+def add_multisig_address(nrequired: int, keys: typing.List[str], label: str, address_type: str) -> typing.Dict:
+    return call('addmultisigaddress', [nrequired, keys, label, address_type])
 
 
-def backup_wallet():
-    pass
+def backup_wallet(destination: str) -> None:
+    return call('backupwallet', [destination])
 
 
-def bump_fee():
-    pass
+def bump_fee(txid: str, options: typing.Dict) -> typing.Dict:
+    return call('bumpfee', [txid, options])
 
 
-def create_wallet():
-    pass
+def create_wallet(
+    wallet_name: str,
+    disable_private_keys: bool = False,
+    blank: bool = False,
+    passphrase: str = '',
+    avoid_reuse: bool = False,
+    descriptors: bool = True,
+    load_on_startup: typing.Optional[bool] = None,
+    external_signer: bool = False,
+) -> typing.Dict:
+    return call('createwallet', [
+        wallet_name,
+        disable_private_keys,
+        blank,
+        passphrase,
+        avoid_reuse,
+        descriptors,
+        load_on_startup,
+        external_signer,
+    ])
 
 
-def dump_privkey():
-    pass
+def dump_privkey(address: str) -> str:
+    return call('dumpprivkey', [address])
 
 
-def dump_wallet():
-    pass
+def dump_wallet(filename: str) -> typing.Dict:
+    return call('dumpwallet', [filename])
 
 
-def encrypt_wallet():
-    pass
+def encrypt_wallet(passphrase: str) -> str:
+    return call('encryptwallet', [passphrase])
 
 
-def get_addresses_by_label():
-    pass
+def get_addresses_by_label(label: str) -> typing.Dict:
+    return call('getaddressesbylabel', [label])
 
 
-def get_address_info():
-    pass
+def get_address_info(address: str) -> typing.Dict:
+    return call('getaddressinfo', [address])
 
 
-def get_balance():
-    pass
+def get_balance(minconf: int = 0, include_watchonly: bool = False) -> decimal.Decimal:
+    return call('getbalance', ['*', minconf, include_watchonly])
 
 
-def get_balances():
-    pass
+def get_balances() -> typing.Dict:
+    return call('getbalances', [])
 
 
-def get_new_address():
-    pass
+def get_new_address(label: str, address_type: str) -> str:
+    return call('getnewaddress', [label, address_type])
 
 
-def get_raw_change_address():
-    pass
+def get_raw_change_address(address_type: str) -> str:
+    return call('getrawchangeaddress', [address_type])
 
 
-def get_received_by_address():
-    pass
+def get_received_by_address(address: str, minconf: int = 1) -> decimal.Decimal:
+    return call('getreceivedbyaddress', [address, minconf])
 
 
-def get_received_by_label():
-    pass
+def get_received_by_label(label: str, minconf: int = 1) -> decimal.Decimal:
+    return call('getreceivedbylabel', [label, minconf])
 
 
-def get_transaction():
-    pass
+def get_transaction(txid: str, include_watchonly: bool = False, verbose: bool = False) -> typing.Dict:
+    return call('gettransaction', [txid, include_watchonly, verbose])
 
 
-def get_unconfirmed_balance():
-    pass
+def get_unconfirmed_balance() -> decimal.Decimal:
+    return call('getunconfirmedbalance', [])
 
 
-def get_wallet_info():
-    pass
+def get_wallet_info() -> typing.Dict:
+    return call('getwalletinfo', [])
 
 
-def import_address():
-    pass
+def import_address(address: str, label: str, rescan: bool = True, p2sh: bool = False) -> None:
+    return call('importaddress', [address, label, rescan, p2sh])
 
 
 def import_descriptors(requests: typing.List[typing.Dict]) -> typing.List[typing.Dict]:
     return call('importdescriptors', [requests])
 
 
-def import_multi():
-    pass
+def import_multi(requests: typing.List[typing.Dict], options: typing.Dict) -> typing.List[typing.Dict]:
+    return call('importmulti', [requests, options])
 
 
-def import_privkey():
-    pass
+def import_privkey(privkey: str, label: str, rescan: bool = True) -> None:
+    return call('importprivkey', [privkey, label, rescan])
 
 
-def import_pruned_funds():
-    pass
+def import_pruned_funds(rawtransaction: str, txoutproof: str) -> None:
+    return call('importprunedfunds', [rawtransaction, txoutproof])
 
 
-def import_pubkey():
-    pass
+def import_pubkey(pubkey: str, label: str, rescan: bool = True) -> None:
+    return call('importpubkey', [pubkey, label, rescan])
 
 
-def import_wallet():
-    pass
+def import_wallet(filename: str) -> None:
+    return call('importwallet', [filename])
 
 
-def keypool_refill():
-    pass
+def keypool_refill(newsize: typing.Optional[int] = None) -> None:
+    return call('keypoolrefill', [newsize])
 
 
-def list_address_groupings():
-    pass
+def list_address_groupings() -> typing.List[typing.List[typing.List[typing.Union[str, decimal.Decimal]]]]:
+    return call('listaddressgroupings', [])
 
 
-def list_labels():
-    pass
+def list_labels(purpose: typing.Optional[str] = None) -> typing.List[str]:
+    return call('listlabels', [purpose])
 
 
-def list_lock_unspent():
-    pass
+def list_lock_unspent() -> typing.List[typing.Dict]:
+    return call('listlockunspent', [])
 
 
-def list_received_by_address():
-    pass
+def list_received_by_address(
+    minconf: int = 1,
+    include_empty: bool = False,
+    include_watchonly: bool = False,
+    address_filter: typing.Optional[str] = None,
+) -> typing.List[typing.Dict]:
+    return call('listreceivedbyaddress', [minconf, include_empty, include_watchonly, address_filter])
 
 
-def list_received_by_label():
-    pass
+def list_received_by_label(
+    minconf: int = 1,
+    include_empty: bool = False,
+    include_watchonly: bool = False,
+) -> typing.List[typing.Dict]:
+    return call('listreceivedbylabel', [minconf, include_empty, include_watchonly])
 
 
-def list_since_block():
-    pass
+def list_since_block(
+    blockhash: typing.Optional[str] = None,
+    target_confirmations: int = 1,
+    include_watchonly: bool = False,
+    include_removed: bool = True,
+) -> typing.Dict:
+    return call('listsinceblock', [blockhash, target_confirmations, include_watchonly, include_removed])
 
 
-def list_transactions():
-    pass
+def list_transactions(
+    label: str = '*',
+    count: int = 10,
+    skip: int = 0,
+    include_watchonly: bool = False,
+) -> typing.List[typing.Dict]:
+    return call('listtransactions', [label, count, skip, include_watchonly])
 
 
 def list_unspent(addresses: typing.List[str]) -> typing.List:
     return call('listunspent', [0, 9999999, addresses])
 
 
-def list_wallet_dir():
-    pass
+def list_wallet_dir() -> typing.Dict:
+    return call('listwalletdir', [])
 
 
-def list_wallets():
-    pass
+def list_wallets() -> typing.List[str]:
+    return call('listwallets', [])
 
 
-def load_wallet():
-    pass
+def load_wallet(filename: str, load_on_startup: typing.Optional[bool] = None) -> typing.Dict:
+    return call('loadwallet', params=[filename, load_on_startup])
 
 
-def lock_unspent():
-    pass
+def lock_unspent(unlock: bool, transactions: typing.Optional[typing.List[typing.Dict]] = None) -> bool:
+    return call('lockunspent', params=[unlock, transactions])
 
 
-def psbt_bump_fee():
-    pass
+def psbt_bump_fee(txid: str, options: typing.Optional[typing.Dict] = None) -> typing.Dict:
+    return call('psbtbumpfee', [txid, options])
 
 
-def remove_pruned_funds():
-    pass
+def remove_pruned_funds(txid: str) -> None:
+    return call('removeprunedfunds', [txid])
 
 
-def rescan_blockchain():
-    pass
+def rescan_blockchain(start_height: int = 0, stop_height: typing.Optional[int] = None) -> typing.Dict:
+    return call('rescanblockchain', [start_height, stop_height])
 
 
-def send():
-    pass
+def send(
+    outputs: typing.Dict,
+    conf_target: typing.Optional[int] = None,
+    estimate_mode: str = 'UNSET',
+    fee_rate: typing.Optional[decimal.Decimal] = None,
+    options: typing.Optional[typing.Dict] = None,
+) -> typing.Dict:
+    return call('send', [outputs, conf_target, estimate_mode, fee_rate, options])
 
 
-def send_many():
-    pass
+def send_many(
+    amounts: typing.Dict,
+    minconf: int = 1,
+    comment: str = '',
+    subtractfeefrom: typing.Optional[typing.List[str]] = None,
+    replaceable: bool = False,
+    conf_target: typing.Optional[int] = None,
+    estimate_mode: str = 'UNSET',
+    fee_rate: typing.Optional[decimal.Decimal] = None,
+) -> str:
+    return call('sendmany', [
+        '',
+        amounts,
+        minconf,
+        comment,
+        subtractfeefrom,
+        replaceable,
+        conf_target,
+        estimate_mode,
+        fee_rate,
+    ])
 
 
-def send_to_address():
-    pass
+def send_to_address(
+    address: str,
+    amount: decimal.Decimal,
+    comment: str = '',
+    comment_to: str = '',
+    subtractfeefromamount: bool = False,
+    replaceable: bool = False,
+    conf_target: typing.Optional[int] = None,
+    estimate_mode: str = 'UNSET',
+    avoid_reuse: bool = True,
+    fee_rate: typing.Optional[decimal.Decimal] = None,
+) -> str:
+    return call('sendtoaddress', [
+        address,
+        amount,
+        comment,
+        comment_to,
+        subtractfeefromamount,
+        replaceable,
+        conf_target,
+        estimate_mode,
+        avoid_reuse,
+        fee_rate,
+    ])
 
 
-def set_hd_seed():
-    pass
+def set_hd_seed(newkeypool: bool = True, seed: typing.Optional[str] = None) -> None:
+    return call('sethdseed', [newkeypool, seed])
 
 
-def set_label():
-    pass
+def set_label(address: str, label: str) -> None:
+    return call('setlabel', [address, label])
 
 
-def set_tx_fee():
-    pass
+def set_tx_fee(amount: decimal.Decimal) -> bool:
+    return call('settxfee', [amount])
 
 
-def set_wallet_flag():
-    pass
+def set_wallet_flag(flag: str, value: bool = True) -> typing.Dict:
+    return call('setwalletflag', [flag, value])
 
 
-def sign_message():
-    pass
+def sign_message(address: str, message: str) -> str:
+    return call('signmessage', [address, message])
 
 
-def sign_raw_transaction_with_wallet():
-    pass
+def sign_raw_transaction_with_wallet(
+    hexstring: str,
+    prevtxs: typing.Optional[typing.List[typing.Dict]] = None,
+    sighashtype: str = 'ALL',
+) -> typing.Dict:
+    return call('signrawtransactionwithwallet', [hexstring, prevtxs, sighashtype])
 
 
-def unload_wallet():
-    pass
+def unload_wallet(
+    wallet_name: typing.Optional[str] = None,
+    load_on_startup: typing.Optional[bool] = None,
+) -> typing.Dict:
+    return call('unloadwallet', [wallet_name, load_on_startup])
 
 
-def upgrade_wallet():
-    pass
+def upgrade_wallet(version: typing.Optional[int] = None) -> typing.Dict:
+    return call('upgradewallet', [version])
 
 
-def wallet_create_funded_psbt():
-    pass
+def wallet_create_funded_psbt(
+    inputs: typing.List[typing.Dict],
+    outputs: typing.List[typing.Dict],
+    locktime: int = 0,
+    options: typing.Optional[typing.Dict] = None,
+    bip32derivs: bool = True,
+) -> typing.Dict:
+    return call('walletcreatefundedpsbt', [inputs, outputs, locktime, options, bip32derivs])
 
 
-def wallet_lock():
-    pass
+def wallet_lock() -> None:
+    return call('walletlock', [])
 
 
-def wallet_passphrase():
-    pass
+def wallet_passphrase(passphrase: str, timeout: int) -> None:
+    return call('walletpassphrase', [passphrase, timeout])
 
 
-def wallet_passphrase_change():
-    pass
+def wallet_passphrase_change(oldpassphrase: str, newpassphrase: str) -> None:
+    return call('walletpassphrasechange', [oldpassphrase, newpassphrase])
 
 
-def wallet_process_psbt():
-    pass
+def wallet_process_psbt(
+    psbt: str,
+    sign: bool = True,
+    sighashtype: str = 'ALL',
+    bip32derivs: bool = True,
+) -> typing.Dict:
+    return call('walletprocesspsbt', [psbt, sign, sighashtype, bip32derivs])
