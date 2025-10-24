@@ -215,57 +215,56 @@ def submit_header(hexdata: str) -> None:
 # Network RPCs
 # =============================================================================
 
-
-def addnode():
-    pass
-
-
-def clear_banned():
-    pass
+def addnode(node: str, command: str) -> None:
+    return call('addnode', [node, command])
 
 
-def disconnect_node():
-    pass
+def clear_banned() -> None:
+    return call('clearbanned', [])
 
 
-def get_added_node_info():
-    pass
+def disconnect_node(address: typing.Optional[str] = None, nodeid: typing.Optional[int] = None) -> None:
+    return call('disconnectnode', [address, nodeid])
 
 
-def get_connection_count():
-    pass
+def get_added_node_info(node: typing.Optional[str] = None) -> typing.List[typing.Dict]:
+    return call('getaddednodeinfo', [node])
 
 
-def get_net_totals():
-    pass
+def get_connection_count() -> int:
+    return call('getconnectioncount', [])
 
 
-def get_network_info():
-    pass
+def get_net_totals() -> typing.Dict:
+    return call('getnettotals', [])
 
 
-def get_node_addresses():
-    pass
+def get_network_info() -> typing.Dict:
+    return call('getnetworkinfo', [])
 
 
-def get_peer_info():
-    pass
+def get_node_addresses() -> typing.List[typing.Dict]:
+    return call('getnodeaddresses', [])
 
 
-def list_banned():
-    pass
+def get_peer_info() -> typing.List[typing.Dict]:
+    return call('getpeerinfo', [])
 
 
-def ping():
-    pass
+def list_banned() -> typing.List[typing.Dict]:
+    return call('listbanned', [])
 
 
-def set_ban():
-    pass
+def ping() -> None:
+    return call('ping', [])
 
 
-def set_network_active():
-    pass
+def set_ban(subnet: str, command: str) -> None:
+    return call('setban', [subnet, command])
+
+
+def set_network_active(state: bool) -> bool:
+    return call('setnetworkactive', [state])
 
 # =============================================================================
 # Rawtransactions RPCs
