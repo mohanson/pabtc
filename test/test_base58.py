@@ -1,5 +1,5 @@
-import random
 import pabtc
+import random
 
 
 def test_base58_encode():

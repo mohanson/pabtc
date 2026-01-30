@@ -1,5 +1,5 @@
-import pytest
 import pabtc
+import pytest
 
 
 def test_bech32():
