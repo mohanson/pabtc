@@ -84,9 +84,9 @@ Before using this script, you first need to execute the code in the Test section
 The testing of this project relies on regtest. You can set up the regtest node using the following steps:
 
 ```sh
-$ wget https://bitcoincore.org/bin/bitcoin-core-30.0/bitcoin-30.0-x86_64-linux-gnu.tar.gz
-$ tar -xvf bitcoin-30.0-x86_64-linux-gnu.tar.gz
-$ cp -R bitcoin-30.0 ~/app/bitcoin # Install to the target location.
+$ wget https://bitcoincore.org/bin/bitcoin-core-30.2/bitcoin-30.2-x86_64-linux-gnu.tar.gz
+$ tar -xvf bitcoin-30.2-x86_64-linux-gnu.tar.gz
+$ cp -R bitcoin-30.2 ~/app/bitcoin # Install to the target location.
 
 $ mkdir ~/.bitcoin
 $ echo "chain=regtest" >> ~/.bitcoin/bitcoin.conf
