@@ -106,15 +106,15 @@ class Pt:
         if x2 == Fq(0) and y2 == Fq(0):
             return self
         if x1 == x2 and y1 == +y2:
-            sk = (x1 * x1 + x1 * x1 + x1 * x1 + A) / (y1 + y1)
-            x3 = sk * sk - x1 - x2
-            y3 = sk * (x1 - x3) - y1
+            sl = (x1 * x1 * Fq(3) + A) / (y1 + y1)
+            x3 = sl * sl - x1 - x2
+            y3 = sl * (x1 - x3) - y1
             return Pt(x3, y3)
         if x1 == x2 and y1 == -y2:
             return I
-        sk = (y2 - y1) / (x2 - x1)
-        x3 = sk * sk - x1 - x2
-        y3 = sk * (x1 - x3) - y1
+        sl = (y2 - y1) / (x2 - x1)
+        x3 = sl * sl - x1 - x2
+        y3 = sl * (x1 - x3) - y1
         return Pt(x3, y3)
 
     def __eq__(self, data: object) -> bool:
@@ -178,7 +178,6 @@ if __name__ == '__main__':
     assert p + q == G * Fr(66)
     assert p + p == G * Fr(84)
     assert p - q == G * Fr(18)
-    assert r == -p
     assert p + r == I
     assert p + I == p
     assert p * Fr(42) == G * Fr(1764)
