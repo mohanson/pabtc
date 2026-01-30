@@ -8,6 +8,7 @@ import pabtc.base58
 import pabtc.bech32
 import pabtc.config
 import pabtc.denomination
+import pabtc.der
 import pabtc.ecdsa
 import pabtc.opcode
 import pabtc.ripemd160
@@ -90,7 +91,7 @@ class PriKey:
     def sign_ecdsa_der(self, data: bytearray) -> bytearray:
         # Sign a 32-byte data segment, returns the signature in der format.
         r, s, _ = self.sign_ecdsa(data)
-        return der_encode(r, s)
+        return pabtc.der.encode(r, s)
 
     def sign_schnorr(self, data: bytearray) -> bytearray:
         # Sign a 32-byte data segment, returns the signature.
@@ -786,39 +787,6 @@ def script(i: typing.List[int | bytearray]) -> bytearray:
         if isinstance(e, bytearray):
             r.extend(e)
     return r
-
-
-def der_encode(r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr) -> bytearray:
-    # DER encoding: https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#der-encoding
-    body = bytearray()
-    body.append(0x02)
-    rbuf = bytearray(r.x.to_bytes(32)).lstrip(bytearray([0x00]))
-    if rbuf[0] & 0x80:
-        rbuf = bytearray([0x00]) + rbuf
-    body.append(len(rbuf))
-    body.extend(rbuf)
-    body.append(0x02)
-    sbuf = bytearray(s.x.to_bytes(32)).lstrip(bytearray([0x00]))
-    if sbuf[0] & 0x80:
-        sbuf = bytearray([0x00]) + sbuf
-    body.append(len(sbuf))
-    body.extend(sbuf)
-    head = bytearray([0x30, len(body)])
-    return head + body
-
-
-def der_decode(sign: bytearray) -> typing.Tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr]:
-    assert sign[0] == 0x30
-    assert sign[1] == len(sign) - 2
-    assert sign[2] == 0x02
-    rlen = sign[3]
-    r = pabtc.secp256k1.Fr(int.from_bytes(sign[4:4+rlen]))
-    f = 4 + rlen
-    assert sign[f] == 0x02
-    slen = sign[f+1]
-    f = f + 2
-    s = pabtc.secp256k1.Fr(int.from_bytes(sign[f:f+slen]))
-    return r, s
 
 
 def witness_encode(wits: typing.List[bytearray]) -> bytearray:

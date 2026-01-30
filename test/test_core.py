@@ -91,15 +91,6 @@ def test_compact_size():
         assert pabtc.core.compact_size_decode(b) == n
 
 
-def test_der():
-    for _ in range(256):
-        r0 = pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N)))
-        s0 = pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N)))
-        r1, s1 = pabtc.core.der_decode(pabtc.core.der_encode(r0, s0))
-        assert r0 == r1
-        assert s0 == s1
-
-
 def test_difficulty_target():
     assert pabtc.core.difficulty_target(
         0x1b0404cb) == 0x00000000000404CB000000000000000000000000000000000000000000000000

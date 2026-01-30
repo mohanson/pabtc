@@ -3,6 +3,7 @@ from . import bech32
 from . import config
 from . import core
 from . import denomination
+from . import der
 from . import ecdsa
 from . import objectdict
 from . import opcode
