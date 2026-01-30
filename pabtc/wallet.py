@@ -81,7 +81,7 @@ class SearcherMempoolSpace:
             return f'https://mempool.space/api/address/{addr}/utxo'
         if self.net == 'testnet':
             return f'https://mempool.space/testnet/api/address/{addr}/utxo'
-        raise Exception
+        raise Exception('unreachable')
 
     def unspent(self, addr: str) -> typing.List[Utxo]:
         r = []
@@ -107,7 +107,7 @@ class Searcher:
             return SearcherMempoolSpace('mainnet').unspent(addr)
         if pabtc.config.current == pabtc.config.testnet:
             return SearcherMempoolSpace('testnet').unspent(addr)
-        raise Exception
+        raise Exception('unreachable')
 
 
 class Tp2pkh:

@@ -265,7 +265,7 @@ def op_pushdata(data: bytearray) -> bytearray:
         return bytearray([op_pushdata2]) + bytearray(l.to_bytes(2, 'little')) + data
     if l < 0xffffffff:
         return bytearray([op_pushdata4]) + bytearray(l.to_bytes(4, 'little')) + data
-    raise Exception
+    raise Exception('unreachable')
 
 
 def op_n(n: int) -> int:

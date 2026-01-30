@@ -85,7 +85,7 @@ class PriKey:
                 s = -s
                 v ^= 1
             return r, s, v
-        raise Exception
+        raise Exception('unreachable')
 
     def sign_ecdsa_der(self, data: bytearray) -> bytearray:
         # Sign a 32-byte data segment, returns the signature in der format.
@@ -256,7 +256,7 @@ def compact_size_encode(n: int) -> bytearray:
         return bytearray([0xfe]) + bytearray(n.to_bytes(4, 'little'))
     if n <= 0xffffffffffffffff:
         return bytearray([0xff]) + bytearray(n.to_bytes(8, 'little'))
-    raise Exception
+    raise Exception('unreachable')
 
 
 def compact_size_decode(data: bytearray) -> int:
@@ -273,7 +273,7 @@ def compact_size_decode_reader(reader: typing.BinaryIO) -> int:
         return int.from_bytes(reader.read(4), 'little')
     if head == 0xff:
         return int.from_bytes(reader.read(8), 'little')
-    raise Exception
+    raise Exception('unreachable')
 
 
 def difficulty_target(bits: int) -> int:
@@ -775,7 +775,7 @@ def script_pubkey(addr: str) -> bytearray:
         return script_pubkey_p2pkh(addr)
     if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.p2sh:
         return script_pubkey_p2sh(addr)
-    raise Exception
+    raise Exception('unreachable')
 
 
 def script(i: typing.List[int | bytearray]) -> bytearray:
