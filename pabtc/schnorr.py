@@ -8,6 +8,7 @@ import pabtc.secp256k1
 
 
 def prikey_implicit(prikey: pabtc.secp256k1.Fr) -> pabtc.secp256k1.Fr:
+    # Make sure the public key is even.
     pubkey = pabtc.secp256k1.G * prikey
     if pubkey == pubkey_implicit(pubkey):
         return +prikey
@@ -16,6 +17,7 @@ def prikey_implicit(prikey: pabtc.secp256k1.Fr) -> pabtc.secp256k1.Fr:
 
 
 def pubkey_implicit(pubkey: pabtc.secp256k1.Pt) -> pabtc.secp256k1.Pt:
+    # Make sure the public key is even.
     if pubkey.y.x & 1:
         return -pubkey
     else:
@@ -23,12 +25,14 @@ def pubkey_implicit(pubkey: pabtc.secp256k1.Pt) -> pabtc.secp256k1.Pt:
 
 
 def hash(name: str, data: bytearray) -> bytearray:
+    # Cryptographic hash function.
     tag = bytearray(hashlib.sha256(name.encode()).digest())
     out = bytearray(hashlib.sha256(tag + tag + data).digest())
     return out
 
 
 def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabtc.secp256k1.Pt, pabtc.secp256k1.Fr]:
+    # Sign message m with private key prikey.
     prikey = prikey_implicit(prikey)
     pubkey = pabtc.secp256k1.G * prikey
     k = prikey_implicit(pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N))))
@@ -40,7 +44,8 @@ def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabt
     return r, s
 
 
-def verify(pubkey: pabtc.secp256k1.Pt, m: pabtc.secp256k1.Fr, r: pabtc.secp256k1.Pt, s: pabtc.secp256k1.Fr):
+def verify(pubkey: pabtc.secp256k1.Pt, m: pabtc.secp256k1.Fr, r: pabtc.secp256k1.Pt, s: pabtc.secp256k1.Fr) -> bool:
+    # Verify signature (r, s) on message m with public key pubkey.
     pubkey = pubkey_implicit(pubkey)
     e_data = bytearray(r.x.x.to_bytes(32) + pubkey.x.x.to_bytes(32) + m.x.to_bytes(32))
     e_hash = hash('BIP0340/challenge', e_data)
