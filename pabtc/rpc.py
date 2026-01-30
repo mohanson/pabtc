@@ -1,10 +1,11 @@
 import decimal
 import itertools
+import pabtc.config
+import pabtc.rate
 import random
 import requests
 import typing
-import pabtc.config
-import pabtc.rate
+
 
 # Doc: https://developer.bitcoin.org/reference/rpc/
 
@@ -214,6 +215,7 @@ def submit_header(hexdata: str) -> None:
 # =============================================================================
 # Network RPCs
 # =============================================================================
+
 
 def addnode(node: str, command: str) -> None:
     return call('addnode', [node, command])

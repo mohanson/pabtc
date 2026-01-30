@@ -1,11 +1,11 @@
 import json
-import requests
-import typing
 import pabtc.core
 import pabtc.denomination
 import pabtc.opcode
 import pabtc.rpc
 import pabtc.secp256k1
+import requests
+import typing
 
 
 class Analyzer:

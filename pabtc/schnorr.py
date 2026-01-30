@@ -1,7 +1,7 @@
 import hashlib
+import pabtc.secp256k1
 import secrets
 import typing
-import pabtc.secp256k1
 
 # Schnorr Signatures for secp256k1.
 # See: https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki

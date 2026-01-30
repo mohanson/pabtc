@@ -1,11 +1,9 @@
 import base64
 import hashlib
-import itertools
-import math
 import io
+import itertools
 import json
-import secrets
-import typing
+import math
 import pabtc.base58
 import pabtc.bech32
 import pabtc.config
@@ -16,6 +14,8 @@ import pabtc.ripemd160
 import pabtc.rpc
 import pabtc.schnorr
 import pabtc.secp256k1
+import secrets
+import typing
 
 sighash_default = 0x00
 sighash_all = 0x01
