@@ -5,7 +5,7 @@ def test_generate_to_address():
     pabtc.config.current = pabtc.config.develop
     prikey = pabtc.core.PriKey(1)
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2wpkh(pubkey)
+    addr = pabtc.core.Address.p2wpkh(pubkey.hash())
     hash = pabtc.rpc.generate_to_address(4, addr)
     assert len(hash) == 4
 
@@ -33,17 +33,17 @@ def test_validate_address():
     pabtc.config.current = pabtc.config.develop
     prikey = pabtc.core.PriKey(1)
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
     assert rets['scriptPubKey'] == pabtc.core.script_pubkey_p2pkh(addr).hex()
-    addr = pabtc.core.address_p2sh_p2wpkh(pubkey)
+    addr = pabtc.core.Address.p2sh_p2wpkh(pubkey.hash())
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
     assert rets['scriptPubKey'] == pabtc.core.script_pubkey_p2sh(addr).hex()
-    addr = pabtc.core.address_p2wpkh(pubkey)
+    addr = pabtc.core.Address.p2wpkh(pubkey.hash())
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
@@ -59,6 +59,6 @@ def test_verify_message():
     pabtc.config.current = pabtc.config.develop
     prikey = pabtc.core.PriKey(1)
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     sigs = pabtc.core.Message('my message').sign(prikey)
     assert pabtc.rpc.verify_message(addr, sigs, 'my message') is True

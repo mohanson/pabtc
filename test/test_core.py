@@ -5,12 +5,15 @@ import string
 
 def test_address_p2pkh():
     pabtc.config.current = pabtc.config.mainnet
-    prikey = pabtc.core.PriKey(1)
-    pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2pkh(pubkey_hash)
     assert addr == '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH'
+    pubkey_hash = bytearray.fromhex('f587ce33cf12ff1dd4cf3b3f861b22785315335f')
+    addr = pabtc.core.Address.p2pkh(pubkey_hash)
+    assert addr == '1PPFEvrSYyLBFBTqnDVujY15fLMg1i8H43'
     pabtc.config.current = pabtc.config.testnet
-    addr = pabtc.core.address_p2pkh(pubkey)
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2pkh(pubkey_hash)
     assert addr == 'mrCDrCybB6J1vRfbwM5hemdJz73FwDBC8r'
 
 
@@ -22,36 +25,88 @@ def test_address_p2sh():
     pubkey.append(0x04)
     pubkey.extend(bytearray.fromhex('2f90074d7a5bf30c72cf3a8dfd1381bdbd30407010e878f3a11269d5f74a5878'))
     pubkey.extend(bytearray.fromhex('8505cdca22ea6eab7cfb40dc0e07aba200424ab0d79122a653ad0c7ec9896bdf'))
-    redeem = pabtc.core.script([
-        pabtc.opcode.op_1,
-        pabtc.opcode.op_pushdata(pubkey),
-        pabtc.opcode.op_1,
-        pabtc.opcode.op_checkmultisig,
-    ])
-    addr = pabtc.core.address_p2sh(redeem)
+    redeem = bytearray()
+    redeem.append(pabtc.opcode.op_1)
+    redeem.extend(pabtc.opcode.op_pushdata(pubkey))
+    redeem.append(pabtc.opcode.op_1)
+    redeem.append(pabtc.opcode.op_checkmultisig)
+    redeem_hash = pabtc.core.hash160(redeem)
+    addr = pabtc.core.Address.p2sh(redeem_hash)
     assert addr == '3P14159f73E4gFr7JterCCQh9QjiTjiZrG'
 
 
 def test_address_p2sh_p2ms():
+    pabtc.config.current = pabtc.config.mainnet
+    pubkey = [pabtc.core.PubKey.sec_decode(bytearray.fromhex(e)) for e in [
+        '022afc20bf379bc96a2f4e9e63ffceb8652b2b6a097f63fbee6ecec2a49a48010e',
+        '03a767c7221e9f15f870f1ad9311f5ab937d79fcaeee15bb2c722bca515581b4c0',
+    ]]
+    addr = pabtc.core.Address.p2sh_p2ms(1, pubkey)
+    assert addr == '3CK4fEwbMP7heJarmU4eqA3sMbVJyEnU3V'
     pabtc.config.current = pabtc.config.develop
-    keys = [pabtc.core.PubKey.sec_decode(bytearray.fromhex(e)) for e in [
+    pubkey = [pabtc.core.PubKey.sec_decode(bytearray.fromhex(e)) for e in [
         '03150176a55b6d77eec5740c1f87f434cf416d5bbde1704bd816288a4466afb7bb',
         '02c3b2d3baf90e559346895b43253407fbb345c146910837b61f301f4c9a7edfe5',
         '02c6e3e94f7ff77457da9e76cf0779ca7c1e8575db064a2ea55400e6a9d8190225',
     ]]
-    addr = pabtc.core.address_p2sh_p2ms(2, keys)
+    addr = pabtc.core.Address.p2sh_p2ms(2, pubkey)
     assert addr == '2MyxShnGQ5NifGb8CHYrtmzosRySxZ9pZo5'
 
 
 def test_address_p2sh_p2wpkh():
     pabtc.config.current = pabtc.config.mainnet
-    prikey = pabtc.core.PriKey(1)
-    pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2sh_p2wpkh(pubkey)
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2sh_p2wpkh(pubkey_hash)
     assert addr == '3JvL6Ymt8MVWiCNHC7oWU6nLeHNJKLZGLN'
     pabtc.config.current = pabtc.config.testnet
-    addr = pabtc.core.address_p2sh_p2wpkh(pubkey)
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2sh_p2wpkh(pubkey_hash)
     assert addr == '2NAUYAHhujozruyzpsFRP63mbrdaU5wnEpN'
+
+
+def test_address_p2sh_p2wsh():
+    pabtc.config.current = pabtc.config.mainnet
+    redeem_hash = bytearray.fromhex('973cfd44e60501c38320ab1105fb3ee3916d2952702e3c8cb4cbb7056aa6b47f')
+    addr = pabtc.core.Address.p2sh_p2wsh(redeem_hash)
+    assert addr == '356yCBhiW9tqg5iiPDhEZ8f8t3JfqkEihA'
+
+
+def test_address_p2wpkh():
+    pabtc.config.current = pabtc.config.mainnet
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2wpkh(pubkey_hash)
+    assert addr == 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
+    pubkey_hash = bytearray.fromhex('841b80d2cc75f5345c482af96294d04fdd66b2b7')
+    addr = pabtc.core.Address.p2wpkh(pubkey_hash)
+    assert addr == 'bc1qssdcp5kvwh6nghzg9tuk99xsflwkdv4hgvq58q'
+    pabtc.config.current = pabtc.config.testnet
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2wpkh(pubkey_hash)
+    assert addr == 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
+
+
+def test_address_p2wsh():
+    pabtc.config.current = pabtc.config.mainnet
+    redeem = pabtc.core.ScriptPubKey.p2ms(2, [pabtc.core.PubKey.sec_decode(bytearray.fromhex(e)) for e in [
+        '03848e308569b644372a5eb26665f1a8c34ca393c130b376db2fae75c43500013c',
+        '03cec1ee615c17e06d4f4b0a08617dffb8e568936bdff18fb057832a58ad4d1b75',
+        '03eed7ae80c34d70f5ba93f93965f69f3c691da0f4607f242f4fd6c7a48789233e',
+    ]])
+    redeem_hash = pabtc.core.hashwsh(redeem)
+    assert redeem_hash.hex() == '65f91a53cb7120057db3d378bd0f7d944167d43a7dcbff15d6afc4823f1d3ed3'
+    addr = pabtc.core.Address.p2wsh(redeem_hash)
+    assert addr == 'bc1qvhu3557twysq2ldn6dut6rmaj3qk04p60h9l79wk4lzgy0ca8mfsnffz65'
+
+
+def test_address_p2wsh_p2ms():
+    pabtc.config.current = pabtc.config.mainnet
+    pubkey = [pabtc.core.PubKey.sec_decode(bytearray.fromhex(e)) for e in [
+        '03848e308569b644372a5eb26665f1a8c34ca393c130b376db2fae75c43500013c',
+        '03cec1ee615c17e06d4f4b0a08617dffb8e568936bdff18fb057832a58ad4d1b75',
+        '03eed7ae80c34d70f5ba93f93965f69f3c691da0f4607f242f4fd6c7a48789233e',
+    ]]
+    addr = pabtc.core.Address.p2wsh_p2ms(2, pubkey)
+    assert addr == 'bc1qvhu3557twysq2ldn6dut6rmaj3qk04p60h9l79wk4lzgy0ca8mfsnffz65'
 
 
 def test_address_p2tr():
@@ -63,17 +118,6 @@ def test_address_p2tr():
     pabtc.config.current = pabtc.config.testnet
     addr = pabtc.core.address_p2tr(pubkey, bytearray())
     assert addr == 'tb1pmfr3p9j00pfxjh0zmgp99y8zftmd3s5pmedqhyptwy6lm87hf5ssk79hv2'
-
-
-def test_address_p2wpkh():
-    pabtc.config.current = pabtc.config.mainnet
-    prikey = pabtc.core.PriKey(1)
-    pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2wpkh(pubkey)
-    assert addr == 'bc1qw508d6qejxtdg4y5r3zarvary0c5xw7kv8f3t4'
-    pabtc.config.current = pabtc.config.testnet
-    addr = pabtc.core.address_p2wpkh(pubkey)
-    assert addr == 'tb1qw508d6qejxtdg4y5r3zarvary0c5xw7kxpjzsx'
 
 
 def test_compact_size():

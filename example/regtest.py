@@ -21,9 +21,9 @@ for d in [
         'desc': d,
         'timestamp': 0,
     }])
-pabtc.rpc.generate_to_address(10, pabtc.core.address_p2pkh(pub1))
-pabtc.rpc.generate_to_address(10, pabtc.core.address_p2sh_p2ms(2, [pub1, pub2]))
-pabtc.rpc.generate_to_address(10, pabtc.core.address_p2sh_p2wpkh(pub1))
-pabtc.rpc.generate_to_address(10, pabtc.core.address_p2wpkh(pub1))
+pabtc.rpc.generate_to_address(10, pabtc.core.Address.p2pkh(pub1.hash()))
+pabtc.rpc.generate_to_address(10, pabtc.core.Address.p2sh_p2ms(2, [pub1, pub2]))
+pabtc.rpc.generate_to_address(10, pabtc.core.Address.p2sh_p2wpkh(pub1.hash()))
+pabtc.rpc.generate_to_address(10, pabtc.core.Address.p2wpkh(pub1.hash()))
 pabtc.rpc.generate_to_address(10, pabtc.core.address_p2tr(pub1, bytearray()))
-pabtc.rpc.generate_to_address(99, pabtc.core.address_p2pkh(pub1))
+pabtc.rpc.generate_to_address(99, pabtc.core.Address.p2pkh(pub1.hash()))

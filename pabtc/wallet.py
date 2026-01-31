@@ -114,7 +114,7 @@ class Tp2pkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2pkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2pkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2pkh(self.addr)
 
     def __repr__(self) -> str:
@@ -154,7 +154,7 @@ class Tp2shp2ms:
         script_asts.append(pabtc.opcode.op_n(len(pubkey)))
         script_asts.append(pabtc.opcode.op_checkmultisig)
         self.redeem = pabtc.core.script(script_asts)
-        self.addr = pabtc.core.address_p2sh(self.redeem)
+        self.addr = pabtc.core.Address.p2sh(pabtc.core.hash160(self.redeem))
         self.script = pabtc.core.script_pubkey_p2sh(self.addr)
 
     def __repr__(self) -> str:
@@ -192,7 +192,7 @@ class Tp2shp2wpkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2sh_p2wpkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2sh_p2wpkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2sh(self.addr)
 
     def __repr__(self) -> str:
@@ -236,7 +236,7 @@ class Tp2wpkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2wpkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2wpkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2wpkh(self.addr)
 
     def __repr__(self) -> str:

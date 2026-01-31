@@ -189,50 +189,251 @@ class PubKey:
                 y = -y % pabtc.secp256k1.P
         return PubKey(x, y)
 
+
+class ScriptPubKey:
+    # The Script pubkey is the locking code for an output. It's made up of script, which is a mini programming language
+    # that allows you to place different types of locks on your outputs.
+
+    @classmethod
+    def p2pk(cls, pubkey: PubKey) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(pubkey.sec()))
+        data.append(pabtc.opcode.op_checksig)
+        return data
+
+    @classmethod
+    def p2pkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        data = bytearray()
+        data.append(pabtc.opcode.op_dup)
+        data.append(pabtc.opcode.op_hash160)
+        data.extend(pabtc.opcode.op_pushdata(pubkey_hash))
+        data.append(pabtc.opcode.op_equalverify)
+        data.append(pabtc.opcode.op_checksig)
+        return data
+
+    @classmethod
+    def p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        data = bytearray()
+        data.append(pabtc.opcode.op_n(m))
+        for e in pubkey:
+            data.extend(pabtc.opcode.op_pushdata(e.sec()))
+        data.append(pabtc.opcode.op_n(len(pubkey)))
+        data.append(pabtc.opcode.op_checkmultisig)
+        return data
+
+    @classmethod
+    def p2sh(cls, redeem_hash: bytearray) -> bytearray:
+        assert len(redeem_hash) == 20
+        data = bytearray()
+        data.append(pabtc.opcode.op_hash160)
+        data.extend(pabtc.opcode.op_pushdata(redeem_hash))
+        data.append(pabtc.opcode.op_equal)
+        return data
+
+    @classmethod
+    def p2sh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        redeem = cls.p2ms(m, pubkey)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        redeem = cls.p2wpkh(pubkey_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_hash: bytearray) -> bytearray:
+        assert len(redeem_hash) == 32
+        redeem = cls.p2wsh(redeem_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2wpkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        data = bytearray()
+        data.append(pabtc.opcode.op_0)
+        data.extend(pabtc.opcode.op_pushdata(pubkey_hash))
+        return data
+
+    @classmethod
+    def p2wsh(cls, redeem_hash: bytearray) -> bytearray:
+        # The script hash within a p2wsh is a single sha-256. It is not a double sha-256 hash (i.e. hash256) as is
+        # commonly used everywhere else in bitcoin, nor is it the hash160 of a script like in p2sh.
+        assert len(redeem_hash) == 32
+        data = bytearray()
+        data.append(pabtc.opcode.op_0)
+        data.extend(pabtc.opcode.op_pushdata(redeem_hash))
+        return data
+
+    @classmethod
+    def p2wsh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        redeem = cls.p2ms(m, pubkey)
+        redeem_hash = hashwsh(redeem)
+        return cls.p2wsh(redeem_hash)
+
+    @classmethod
+    def p2tr(cls, root: bytearray) -> bytearray:
+        assert len(root) == 32
+        data = bytearray()
+        data.append(pabtc.opcode.op_1)
+        data.extend(pabtc.opcode.op_pushdata(root))
+        return data
+
+
+class ScriptSig:
+    # A script sig provides the unlocking code for a previous output. Each output in a transaction has a locking code
+    # placed on it. So when you come to select one as an input in a future transaction, you need to supply an unlocking
+    # code so that it can be spent. This locking/unlocking code uses a mini-programming language called script.
+
+    @classmethod
+    def p2pk(cls, sig: bytearray) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(sig))
+        return data
+
+    @classmethod
+    def p2pkh(cls, sig: bytearray, pubkey: PubKey) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(sig))
+        data.extend(pabtc.opcode.op_pushdata(pubkey.sec()))
+        return data
+
+    @classmethod
+    def p2ms(cls, sig: typing.List[bytearray]) -> bytearray:
+        data = bytearray()
+        # Due to a bug in the original bitcoin implementation, an extra op_0 is required.
+        data.append(pabtc.opcode.op_0)
+        for e in sig:
+            data.extend(pabtc.opcode.op_pushdata(e))
+        return data
+
+    @classmethod
+    def p2sh(cls, script: bytearray, redeem: bytearray) -> bytearray:
+        data = bytearray()
+        # Script is the unlocking code required to unlock the upcoming redeem script.
+        data.extend(script)
+        data.extend(pabtc.opcode.op_pushdata(redeem))
+        return data
+
+    @classmethod
+    def p2sh_p2ms(cls, sig: typing.List[bytearray], m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        script = cls.p2ms(sig)
+        redeem = ScriptPubKey.p2ms(m, pubkey)
+        return cls.p2sh(script, redeem)
+
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        script = bytearray()
+        redeem = ScriptPubKey.p2wpkh(pubkey_hash)
+        return cls.p2sh(script, redeem)
+
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_hash: bytearray) -> bytearray:
+        assert len(redeem_hash) == 32
+        script = bytearray()
+        redeem = ScriptPubKey.p2wsh(redeem_hash)
+        return cls.p2sh(script, redeem)
+
+
+class Address:
+    # Bitcoin address is a string that represents a destination for a bitcoin payment.
+
+    @classmethod
+    def p2pkh(cls, pubkey_hash: bytearray) -> str:
+        assert len(pubkey_hash) == 20
+        data = bytearray([pabtc.config.current.prefix.base58.p2pkh]) + pubkey_hash
+        chk4 = hash256(data)[:4]
+        return pabtc.base58.encode(data + chk4)
+
+    @classmethod
+    def p2sh(cls, redeem_hash: bytearray) -> str:
+        assert len(redeem_hash) == 20
+        data = bytearray([pabtc.config.current.prefix.base58.p2sh]) + redeem_hash
+        chk4 = hash256(data)[:4]
+        return pabtc.base58.encode(data + chk4)
+
+    @classmethod
+    def p2sh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> str:
+        redeem = ScriptPubKey.p2ms(m, pubkey)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey_hash: bytearray) -> str:
+        assert len(pubkey_hash) == 20
+        redeem = ScriptPubKey.p2wpkh(pubkey_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_hash: bytearray) -> str:
+        assert len(redeem_hash) == 32
+        redeem = ScriptPubKey.p2wsh(redeem_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2wpkh(cls, pubkey_hash: bytearray) -> str:
+        assert len(pubkey_hash) == 20
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, pubkey_hash)
+
+    @classmethod
+    def p2wsh(cls, redeem_hash: bytearray) -> str:
+        assert len(redeem_hash) == 32
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, redeem_hash)
+
+    @classmethod
+    def p2wsh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> str:
+        redeem = ScriptPubKey.p2ms(m, pubkey)
+        redeem_hash = hashwsh(redeem)
+        return cls.p2wsh(redeem_hash)
+
+    @classmethod
+    def p2tr(cls, root: bytearray) -> str:
+        assert len(root) == 32
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 1, root)
+
+
+class Witness:
+    # Bitcoin witness is an extended part of a transaction that contains data used to satisfy the conditions placed on
+    # the spending of outputs. It was introduced as part of the segregated witness (segwit) upgrade to the bitcoin.
+
+    @classmethod
+    def p2sh_p2wpkh(cls, sig: bytearray, pubkey: PubKey) -> typing.List[bytearray]:
+        # The structure of the witness field for a p2sh-p2wpkh is exactly the same as it is for a direct p2wpkh.
+        return cls.p2wpkh(sig, pubkey)
+
+    @classmethod
+    def p2sh_p2wsh(cls, member: typing.List[bytearray], redeem: bytearray) -> typing.List[bytearray]:
+        # The structure of the witness field for a p2sh-p2wsh is exactly the same as it is for a direct p2wsh.
+        return cls.p2wsh(member, redeem)
+
+    @classmethod
+    def p2wpkh(cls, sig: bytearray, pubkey: PubKey) -> typing.List[bytearray]:
+        return [sig, pubkey.sec()]
+
+    @classmethod
+    def p2wsh(cls, member: typing.List[bytearray], custom: bytearray) -> typing.List[bytearray]:
+        member = member.copy()
+        member.append(custom)
+        return member
+
+    @classmethod
+    def p2wsh_p2ms(cls, sig: typing.List[bytearray], m: int, pubkey: typing.List[PubKey]) -> typing.List[bytearray]:
+        member = []
+        member.append(bytearray())
+        member.extend(sig)
+        custom = ScriptPubKey.p2ms(m, pubkey)
+        member.append(custom)
+        return cls.p2wsh(member, custom)
+
+
 # Bitcoin address prefix: https://en.bitcoin.it/wiki/List_of_address_prefixes
-
-
-def address_p2pkh(pubkey: PubKey) -> str:
-    # Legacy
-    pubkey_hash = hash160(pubkey.sec())
-    data = bytearray([pabtc.config.current.prefix.base58.p2pkh]) + pubkey_hash
-    chk4 = hash256(data)[:4]
-    return pabtc.base58.encode(data + chk4)
-
-
-def address_p2sh(redeem: bytearray) -> str:
-    # Pay to Script Hash.
-    # See: https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki
-    redeem_hash = hash160(redeem)
-    data = bytearray([pabtc.config.current.prefix.base58.p2sh]) + redeem_hash
-    chk4 = hash256(data)[:4]
-    return pabtc.base58.encode(data + chk4)
-
-
-def address_p2sh_p2ms(n: int, pubkey: typing.List[PubKey]) -> str:
-    redeem_script = []
-    redeem_script.append(pabtc.opcode.op_n(n))
-    for e in pubkey:
-        redeem_script.append(pabtc.opcode.op_pushdata(e.sec()))
-    redeem_script.append(pabtc.opcode.op_n(len(pubkey)))
-    redeem_script.append(pabtc.opcode.op_checkmultisig)
-    redeem_script = script(redeem_script)
-    return address_p2sh(redeem_script)
-
-
-def address_p2sh_p2wpkh(pubkey: PubKey) -> str:
-    # Nested Segwit.
-    # See https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki
-    pubkey_hash = hash160(pubkey.sec())
-    redeem_script = script([pabtc.opcode.op_0, pabtc.opcode.op_pushdata(pubkey_hash)])
-    return address_p2sh(redeem_script)
-
-
-def address_p2wpkh(pubkey: PubKey) -> str:
-    # Native SegWit.
-    # See https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki
-    pubkey_hash = hash160(pubkey.sec())
-    return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, pubkey_hash)
 
 
 def address_p2tr(pubkey: PubKey, root: bytearray) -> str:
@@ -692,7 +893,7 @@ class Transaction:
         return tx
 
     @classmethod
-    def serialize_decode_segwit(cls, data: bytearray) -> Transaction:
+    def serialize_decode_segwit_addr(cls, data: bytearray) -> Transaction:
         reader = io.BytesIO(data)
         tx = Transaction(0, [], [], 0)
         tx.version = int.from_bytes(reader.read(4), 'little')
@@ -716,7 +917,7 @@ class Transaction:
     @classmethod
     def serialize_decode(cls, data: bytearray) -> Transaction:
         if data[4] == 0x00:
-            return Transaction.serialize_decode_segwit(data)
+            return Transaction.serialize_decode_segwit_addr(data)
         else:
             return Transaction.serialize_decode_legacy(data)
 
