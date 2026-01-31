@@ -220,15 +220,15 @@ class ScriptPubKey:
         data.append(pabtc.opcode.op_checksig)
         return data
 
-    # @classmethod
-    # def p2ms(cls, pubkey: typing.List[PubKey], m: int) -> bytearray:
-    #     data = bytearray()
-    #     data.append(pabtc.opcode.op_n(m))
-    #     for e in pubkey:
-    #         data.extend(pabtc.opcode.op_pushdata(e.sec()))
-    #     data.append(pabtc.opcode.op_n(len(pubkey)))
-    #     data.append(pabtc.opcode.op_checkmultisig)
-    #     return data
+    @classmethod
+    def p2ms(cls, pubkey: typing.List[PubKey], m: int) -> bytearray:
+        data = bytearray()
+        data.append(pabtc.opcode.op_n(m))
+        for e in pubkey:
+            data.extend(pabtc.opcode.op_pushdata(e.sec()))
+        data.append(pabtc.opcode.op_n(len(pubkey)))
+        data.append(pabtc.opcode.op_checkmultisig)
+        return data
 
     # @classmethod
     # def p2sh(cls, redeem_hash: bytearray) -> bytearray:
@@ -272,14 +272,14 @@ class ScriptSig:
         data.extend(pabtc.opcode.op_pushdata(pubkey.sec()))
         return data
 
-    # @classmethod
-    # def p2ms(cls, sig: typing.List[bytearray]) -> bytearray:
-    #     data = bytearray()
-    #     # Due to a bug in the original bitcoin implementation, an extra op_0 is required.
-    #     data.append(pabtc.opcode.op_0)
-    #     for e in sig:
-    #         data.extend(pabtc.opcode.op_pushdata(e))
-    #     return data
+    @classmethod
+    def p2ms(cls, sig: typing.List[bytearray]) -> bytearray:
+        data = bytearray()
+        # Due to a bug in the original bitcoin implementation, an extra op_0 is required.
+        data.append(pabtc.opcode.op_0)
+        for e in sig:
+            data.extend(pabtc.opcode.op_pushdata(e))
+        return data
 
     # @classmethod
     # def p2sh(cls, sig: bytearray, redeem: bytearray) -> bytearray:
