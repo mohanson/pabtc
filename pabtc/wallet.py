@@ -114,7 +114,7 @@ class Tp2pkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2pkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2pkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2pkh(self.addr)
 
     def __repr__(self) -> str:

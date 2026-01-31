@@ -33,7 +33,7 @@ def test_validate_address():
     pabtc.config.current = pabtc.config.develop
     prikey = pabtc.core.PriKey(1)
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
@@ -59,6 +59,6 @@ def test_verify_message():
     pabtc.config.current = pabtc.config.develop
     prikey = pabtc.core.PriKey(1)
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     sigs = pabtc.core.Message('my message').sign(prikey)
     assert pabtc.rpc.verify_message(addr, sigs, 'my message') is True

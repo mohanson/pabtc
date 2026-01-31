@@ -7,10 +7,10 @@ def test_address_p2pkh():
     pabtc.config.current = pabtc.config.mainnet
     prikey = pabtc.core.PriKey(1)
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     assert addr == '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH'
     pabtc.config.current = pabtc.config.testnet
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     assert addr == 'mrCDrCybB6J1vRfbwM5hemdJz73FwDBC8r'
 
 

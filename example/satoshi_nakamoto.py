@@ -6,7 +6,7 @@ pabtc.config.current = pabtc.config.mainnet
 for _ in range(1 << 32):
     prikey = pabtc.core.PriKey.random()
     pubkey = prikey.pubkey()
-    addr = pabtc.core.address_p2pkh(pubkey)
+    addr = pabtc.core.Address.p2pkh(pubkey.hash())
     print(prikey, addr)
     # This is the Genesis address, it is owned by Satoshi Nakamoto and contains the unspendable 50 bitcoin mined from
     # the genesis block.
