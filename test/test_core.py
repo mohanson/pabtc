@@ -5,18 +5,16 @@ import string
 
 def test_address_p2pkh():
     pabtc.config.current = pabtc.config.mainnet
-    prikey = pabtc.core.PriKey(1)
-    pubkey = prikey.pubkey()
-    pubkey_hash = pubkey.hash()
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
     addr = pabtc.core.Address.p2pkh(pubkey_hash)
     assert addr == '1BgGZ9tcN4rm9KBzDn7KprQz87SZ26SAMH'
-    pabtc.config.current = pabtc.config.testnet
-    addr = pabtc.core.Address.p2pkh(pubkey_hash)
-    assert addr == 'mrCDrCybB6J1vRfbwM5hemdJz73FwDBC8r'
-    pabtc.config.current = pabtc.config.mainnet
     pubkey_hash = bytearray.fromhex('f587ce33cf12ff1dd4cf3b3f861b22785315335f')
     addr = pabtc.core.Address.p2pkh(pubkey_hash)
     assert addr == '1PPFEvrSYyLBFBTqnDVujY15fLMg1i8H43'
+    pabtc.config.current = pabtc.config.testnet
+    pubkey_hash = pabtc.core.PriKey(1).pubkey().hash()
+    addr = pabtc.core.Address.p2pkh(pubkey_hash)
+    assert addr == 'mrCDrCybB6J1vRfbwM5hemdJz73FwDBC8r'
 
 
 def test_address_p2sh():
