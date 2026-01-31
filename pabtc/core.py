@@ -301,10 +301,6 @@ class Address:
     # Bitcoin address is a string that represents a destination for a bitcoin payment.
 
     @classmethod
-    def p2pk(cls) -> str:
-        raise Exception('unreachable')
-
-    @classmethod
     def p2pkh(cls, pubkey_hash: bytearray) -> str:
         assert len(pubkey_hash) == 20
         data = bytearray([pabtc.config.current.prefix.p2pkh]) + pubkey_hash
