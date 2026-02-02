@@ -6,14 +6,14 @@ def test_wallet_transfer():
     pabtc.config.current = pabtc.config.develop
     user_list = [
         pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(1)),
-        pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2ms([pabtc.core.PriKey(e).pubkey() for e in [1, 2]], [1, 2])),
+        pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2ms(2, [pabtc.core.PriKey(e).pubkey() for e in [1, 2]], [1, 2])),
         pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2wpkh(1)),
         pabtc.wallet.Wallet(pabtc.wallet.Tp2wpkh(1)),
         pabtc.wallet.Wallet(pabtc.wallet.Tp2tr(1, bytearray())),
     ]
     mate_list = [
         pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(2)),
-        pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2ms([pabtc.core.PriKey(e).pubkey() for e in [2, 1]], [2, 1])),
+        pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2ms(2, [pabtc.core.PriKey(e).pubkey() for e in [2, 1]], [2, 1])),
         pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2wpkh(2)),
         pabtc.wallet.Wallet(pabtc.wallet.Tp2wpkh(2)),
         pabtc.wallet.Wallet(pabtc.wallet.Tp2tr(2, bytearray())),

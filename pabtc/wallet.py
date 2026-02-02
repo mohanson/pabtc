@@ -133,10 +133,7 @@ class Tp2pkh:
             m = tx.digest_legacy(i, pabtc.core.sighash_all, e.out_point.load().script_pubkey)
             s = self.prikey.sign_ecdsa_der(m)
             s.append(pabtc.core.sighash_all)
-            e.script_sig = pabtc.core.script([
-                pabtc.opcode.op_pushdata(s),
-                pabtc.opcode.op_pushdata(self.pubkey.sec())
-            ])
+            e.script_sig = pabtc.core.ScriptSig.p2pkh(s, self.pubkey)
 
     def txin(self, op: pabtc.core.OutPoint) -> pabtc.core.TxIn:
         return pabtc.core.TxIn(op, bytearray(107), 0xffffffff, [])
@@ -144,10 +141,11 @@ class Tp2pkh:
 
 class Tp2shp2ms:
     # Multi-signature: See https://en.bitcoin.it/wiki/Multi-signature.
-    def __init__(self, pubkey: typing.List[pabtc.core.PubKey], prikey: typing.List[int]) -> None:
+    def __init__(self, m: int, pubkey: typing.List[pabtc.core.PubKey], prikey: typing.List[int]) -> None:
+        self.m = m
         self.prikey = [pabtc.core.PriKey(e) for e in prikey]
         self.pubkey = pubkey
-        self.redeem = pabtc.core.ScriptPubKey.p2ms(len(prikey), pubkey)
+        self.redeem = pabtc.core.ScriptPubKey.p2ms(self.m, pubkey)
         self.addr = pabtc.core.address_p2sh(self.redeem)
         self.script = pabtc.core.script_pubkey_p2sh(self.addr)
 
@@ -164,22 +162,16 @@ class Tp2shp2ms:
 
     def sign(self, tx: pabtc.core.Transaction) -> None:
         for i, e in enumerate(tx.vin):
-            script_sig = []
-            script_sig.append(pabtc.opcode.op_0)
+            sig = []
             for prikey in self.prikey:
                 s = prikey.sign_ecdsa_der(tx.digest_legacy(i, pabtc.core.sighash_all, self.redeem))
                 s.append(pabtc.core.sighash_all)
-                script_sig.append(pabtc.opcode.op_pushdata(s))
-            script_sig.append(pabtc.opcode.op_pushdata(self.redeem))
-            e.script_sig = pabtc.core.script(script_sig)
+                sig.append(s)
+            e.script_sig = pabtc.core.ScriptSig.p2sh_p2ms(sig, self.m, self.pubkey)
 
     def txin(self, op: pabtc.core.OutPoint) -> pabtc.core.TxIn:
-        script_sig = []
-        script_sig.append(pabtc.opcode.op_0)
-        for _ in range(len(self.prikey)):
-            script_sig.append(pabtc.opcode.op_pushdata(bytearray(72)))
-        script_sig.append(pabtc.opcode.op_pushdata(self.redeem))
-        return pabtc.core.TxIn(op, pabtc.core.script(script_sig), 0xffffffff, [])
+        script_sig = pabtc.core.ScriptSig.p2sh_p2ms([bytearray(72)] * len(self.prikey), self.m, self.pubkey)
+        return pabtc.core.TxIn(op, script_sig, 0xffffffff, [])
 
 
 class Tp2shp2wpkh:
@@ -204,10 +196,7 @@ class Tp2shp2wpkh:
         # See: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh-nested-in-bip16-p2sh
         pubkey_hash = pabtc.core.hash160(self.pubkey.sec())
         script_code = pabtc.opcode.op_pushdata(pabtc.core.ScriptPubKey.p2pkh(pubkey_hash))
-        script_sig = pabtc.core.script([pabtc.opcode.op_pushdata(pabtc.core.script([
-            pabtc.opcode.op_0,
-            pabtc.opcode.op_pushdata(pubkey_hash)
-        ]))])
+        script_sig = pabtc.core.ScriptSig.p2sh_p2wpkh(self.pubkey.hash())
         for i, e in enumerate(tx.vin):
             e.script_sig = script_sig
             s = self.prikey.sign_ecdsa_der(tx.digest_segwit_v0(i, pabtc.core.sighash_all, script_code))

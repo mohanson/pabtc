@@ -283,6 +283,62 @@ class ScriptPubKey:
         data.extend(pabtc.opcode.op_pushdata(root))
         return data
 
+
+class ScriptSig:
+    # A script sig provides the unlocking code for a previous output. Each output in a transaction has a locking code
+    # placed on it. So when you come to select one as an input in a future transaction, you need to supply an unlocking
+    # code so that it can be spent. This locking/unlocking code uses a mini-programming language called script.
+
+    @classmethod
+    def p2pk(cls, sig: bytearray) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(sig))
+        return data
+
+    @classmethod
+    def p2pkh(cls, sig: bytearray, pubkey: PubKey) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(sig))
+        data.extend(pabtc.opcode.op_pushdata(pubkey.sec()))
+        return data
+
+    @classmethod
+    def p2ms(cls, sig: typing.List[bytearray]) -> bytearray:
+        data = bytearray()
+        # Due to a bug in the original bitcoin implementation, an extra op_0 is required.
+        data.append(pabtc.opcode.op_0)
+        for e in sig:
+            data.extend(pabtc.opcode.op_pushdata(e))
+        return data
+
+    @classmethod
+    def p2sh(cls, script: bytearray, redeem: bytearray) -> bytearray:
+        data = bytearray()
+        # Script is the unlocking code required to unlock the upcoming redeem script.
+        data.extend(script)
+        data.extend(pabtc.opcode.op_pushdata(redeem))
+        return data
+
+    @classmethod
+    def p2sh_p2ms(cls, sig: typing.List[bytearray], m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        script = cls.p2ms(sig)
+        redeem = ScriptPubKey.p2ms(m, pubkey)
+        return cls.p2sh(script, redeem)
+
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        script = bytearray()
+        redeem = ScriptPubKey.p2wpkh(pubkey_hash)
+        return cls.p2sh(script, redeem)
+
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_hash: bytearray) -> bytearray:
+        assert len(redeem_hash) == 32
+        script = bytearray()
+        redeem = ScriptPubKey.p2wsh(redeem_hash)
+        return cls.p2sh(script, redeem)
+
 # Bitcoin address prefix: https://en.bitcoin.it/wiki/List_of_address_prefixes
 
 
