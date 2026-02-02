@@ -224,7 +224,7 @@ def address_p2wpkh(pubkey: PubKey) -> str:
     # Native SegWit.
     # See https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki
     pubkey_hash = hash160(pubkey.sec())
-    return pabtc.bech32.encode(pabtc.config.current.prefix.bech32, 0, pubkey_hash)
+    return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, pubkey_hash)
 
 
 def address_p2tr(pubkey: PubKey, root: bytearray) -> str:
@@ -240,7 +240,7 @@ def address_p2tr(pubkey: PubKey, root: bytearray) -> str:
     adjust_prikey = pabtc.secp256k1.Fr(int.from_bytes(adjust_prikey_byte))
     adjust_pubkey = pabtc.secp256k1.G * adjust_prikey
     output_pubkey = origin_pubkey + adjust_pubkey
-    return pabtc.bech32.encode(pabtc.config.current.prefix.bech32, 1, bytearray(output_pubkey.x.x.to_bytes(32)))
+    return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 1, bytearray(output_pubkey.x.x.to_bytes(32)))
 
 
 def compact_size_encode(n: int) -> bytearray:
@@ -751,7 +751,7 @@ def script_pubkey_p2sh(addr: str) -> bytearray:
 
 
 def script_pubkey_p2wpkh(addr: str) -> bytearray:
-    hash = pabtc.bech32.decode(pabtc.config.current.prefix.bech32, 0, addr)
+    hash = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 0, addr)
     return script([
         pabtc.opcode.op_0,
         pabtc.opcode.op_pushdata(hash),
@@ -759,7 +759,7 @@ def script_pubkey_p2wpkh(addr: str) -> bytearray:
 
 
 def script_pubkey_p2tr(addr: str) -> bytearray:
-    pubx = pabtc.bech32.decode(pabtc.config.current.prefix.bech32, 1, addr)
+    pubx = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, addr)
     return script([
         pabtc.opcode.op_1,
         pabtc.opcode.op_pushdata(pubx),

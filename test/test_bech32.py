@@ -14,8 +14,8 @@ def test_bech32():
         '?1ezyfcl',
     ]:
         hrp = s.rsplit('1', 1)[0].lower()
-        data = pabtc.bech32.bech32_decode(hrp, 0, s)
-        assert pabtc.bech32.bech32_encode(hrp, 0, data) == s.lower()
+        data = pabtc.bech32.decode(hrp, 0, s)
+        assert pabtc.bech32.encode(hrp, 0, data) == s.lower()
     for s in [
         '\x20' + '1nwldj5',
         '\x7F' + '1axkwrx',
@@ -33,7 +33,7 @@ def test_bech32():
         with pytest.raises(AssertionError):
             assert len(s) <= 90
             hrp = s.rsplit('1', 1)[0].lower()
-            pabtc.bech32.bech32_decode(hrp, 0, s)
+            pabtc.bech32.decode(hrp, 0, s)
 
 
 def test_bech32m():
@@ -48,8 +48,8 @@ def test_bech32m():
         '?1v759aa',
     ]:
         hrp = s.rsplit('1', 1)[0].lower()
-        data = pabtc.bech32.bech32_decode(hrp, 1, s)
-        assert pabtc.bech32.bech32_encode(hrp, 1, data) == s.lower()
+        data = pabtc.bech32.decode(hrp, 1, s)
+        assert pabtc.bech32.encode(hrp, 1, data) == s.lower()
     for s in [
         '\x20' + '1xj0phk',
         '\x7F' + '1g6xzxy',
@@ -69,4 +69,4 @@ def test_bech32m():
         with pytest.raises(AssertionError):
             assert len(s) <= 90
             hrp = s.rsplit('1', 1)[0].lower()
-            pabtc.bech32.bech32_decode(hrp, 1, s)
+            pabtc.bech32.decode(hrp, 1, s)

@@ -26,7 +26,8 @@ class Tp2trp2pk:
         self.pubkey = pubkey
         self.addr = pabtc.core.address_p2tr(pubkey, mast.hash)
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
-        output_pubkey_byte = bytearray([0x02]) + pabtc.bech32.decode(pabtc.config.current.prefix.bech32, 1, self.addr)
+        output_pubkey_byte = bytearray(
+            [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
         output_pubkey = pabtc.core.PubKey.sec_decode(output_pubkey_byte)
         # Control byte with leaf version and parity bit.
         if output_pubkey.y & 1:
@@ -55,7 +56,8 @@ class Tp2trp2ms:
         self.pubkey = pubkey
         self.addr = pabtc.core.address_p2tr(pubkey, mast.hash)
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
-        output_pubkey_byte = bytearray([0x02]) + pabtc.bech32.decode(pabtc.config.current.prefix.bech32, 1, self.addr)
+        output_pubkey_byte = bytearray(
+            [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
         output_pubkey = pabtc.core.PubKey.sec_decode(output_pubkey_byte)
         # Control byte with leaf version and parity bit.
         if output_pubkey.y & 1:
