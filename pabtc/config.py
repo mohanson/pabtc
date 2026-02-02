@@ -8,10 +8,12 @@ develop = pabtc.objectdict.ObjectDict({
         'password': 'pass',
     },
     'prefix': {
-        'p2pkh': 0x6f,
-        'p2sh': 0xc4,
+        'base58': {
+            'p2pkh': 0x6f,
+            'p2sh': 0xc4,
+            'wif': 0xef,
+        },
         'bech32': 'bcrt',
-        'wif': 0xef,
     },
 })
 
@@ -23,10 +25,12 @@ mainnet = pabtc.objectdict.ObjectDict({
         'password': '',
     },
     'prefix': {
-        'p2pkh': 0x00,
-        'p2sh': 0x05,
+        'base58': {
+            'p2pkh': 0x00,
+            'p2sh': 0x05,
+            'wif': 0x80,
+        },
         'bech32': 'bc',
-        'wif': 0x80,
     },
 })
 
@@ -38,10 +42,12 @@ testnet = pabtc.objectdict.ObjectDict({
         'password': '',
     },
     'prefix': {
-        'p2pkh': 0x6f,
-        'p2sh': 0xc4,
+        'base58': {
+            'p2pkh': 0x6f,
+            'p2sh': 0xc4,
+            'wif': 0xef,
+        },
         'bech32': 'tb',
-        'wif': 0xef,
     },
 })
 

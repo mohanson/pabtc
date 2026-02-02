@@ -104,7 +104,7 @@ class PriKey:
         # Convert the private key to wallet import format. This is the format supported by most third-party wallets.
         # See https://en.bitcoin.it/wiki/Wallet_import_format
         data = bytearray()
-        data.append(pabtc.config.current.prefix.wif)
+        data.append(pabtc.config.current.prefix.base58.wif)
         data.extend(self.n.to_bytes(32))
         # Also add a 0x01 byte at the end if the private key will correspond to a compressed public key.
         data.append(0x01)
@@ -116,7 +116,7 @@ class PriKey:
     def wif_decode(cls, data: str) -> PriKey:
         # Convert the wallet import format to private key. This is the format supported by most third-party wallets.
         b = pabtc.base58.decode(data)
-        assert b[0] == pabtc.config.current.prefix.wif
+        assert b[0] == pabtc.config.current.prefix.base58.wif
         assert hash256(b[:-4])[:4] == b[-4:]
         return PriKey(int.from_bytes(b[1:33]))
 
@@ -187,7 +187,7 @@ class PubKey:
 def address_p2pkh(pubkey: PubKey) -> str:
     # Legacy
     pubkey_hash = hash160(pubkey.sec())
-    data = bytearray([pabtc.config.current.prefix.p2pkh]) + pubkey_hash
+    data = bytearray([pabtc.config.current.prefix.base58.p2pkh]) + pubkey_hash
     chk4 = hash256(data)[:4]
     return pabtc.base58.encode(data + chk4)
 
@@ -196,7 +196,7 @@ def address_p2sh(redeem: bytearray) -> str:
     # Pay to Script Hash.
     # See: https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki
     redeem_hash = hash160(redeem)
-    data = bytearray([pabtc.config.current.prefix.p2sh]) + redeem_hash
+    data = bytearray([pabtc.config.current.prefix.base58.p2sh]) + redeem_hash
     chk4 = hash256(data)[:4]
     return pabtc.base58.encode(data + chk4)
 
@@ -726,7 +726,7 @@ class Transaction:
 
 def script_pubkey_p2pkh(addr: str) -> bytearray:
     data = pabtc.base58.decode(addr)
-    assert data[0] == pabtc.config.current.prefix.p2pkh
+    assert data[0] == pabtc.config.current.prefix.base58.p2pkh
     hash = data[0x01:0x15]
     assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
     return script([
@@ -740,7 +740,7 @@ def script_pubkey_p2pkh(addr: str) -> bytearray:
 
 def script_pubkey_p2sh(addr: str) -> bytearray:
     data = pabtc.base58.decode(addr)
-    assert data[0] == pabtc.config.current.prefix.p2sh
+    assert data[0] == pabtc.config.current.prefix.base58.p2sh
     hash = data[0x01:0x15]
     assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
     return script([
@@ -772,9 +772,9 @@ def script_pubkey(addr: str) -> bytearray:
             return script_pubkey_p2wpkh(addr)
         if addr[len(pabtc.config.current.prefix.bech32) + 1] == 'p':
             return script_pubkey_p2tr(addr)
-    if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.p2pkh:
+    if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.base58.p2pkh:
         return script_pubkey_p2pkh(addr)
-    if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.p2sh:
+    if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.base58.p2sh:
         return script_pubkey_p2sh(addr)
     raise Exception('unreachable')
 
