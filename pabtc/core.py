@@ -37,6 +37,10 @@ def hashtag(name: str, data: bytearray) -> bytearray:
     return pabtc.schnorr.hash(name, data)
 
 
+def hashwsh(data: bytearray) -> bytearray:
+    return bytearray(hashlib.sha256(data).digest())
+
+
 class PriKey:
     # Bitcoin private key is an integer between 0 and n, where n is slightly smaller than 2**256.
 
@@ -138,6 +142,10 @@ class PubKey:
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
+
+    def hash(self) -> bytearray:
+        # Get the hash160 of the public key.
+        return hash160(self.sec())
 
     def json(self) -> typing.Dict:
         # Convert the public key to json representation.
