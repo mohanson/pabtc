@@ -189,6 +189,100 @@ class PubKey:
                 y = -y % pabtc.secp256k1.P
         return PubKey(x, y)
 
+
+class ScriptPubKey:
+    # The Script pubkey is the locking code for an output. It's made up of script, which is a mini programming language
+    # that allows you to place different types of locks on your outputs.
+
+    @classmethod
+    def p2pk(cls, pubkey: PubKey) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(pubkey.sec()))
+        data.append(pabtc.opcode.op_checksig)
+        return data
+
+    @classmethod
+    def p2pkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        data = bytearray()
+        data.append(pabtc.opcode.op_dup)
+        data.append(pabtc.opcode.op_hash160)
+        data.extend(pabtc.opcode.op_pushdata(pubkey_hash))
+        data.append(pabtc.opcode.op_equalverify)
+        data.append(pabtc.opcode.op_checksig)
+        return data
+
+    @classmethod
+    def p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        data = bytearray()
+        data.append(pabtc.opcode.op_n(m))
+        for e in pubkey:
+            data.extend(pabtc.opcode.op_pushdata(e.sec()))
+        data.append(pabtc.opcode.op_n(len(pubkey)))
+        data.append(pabtc.opcode.op_checkmultisig)
+        return data
+
+    @classmethod
+    def p2sh(cls, redeem_hash: bytearray) -> bytearray:
+        assert len(redeem_hash) == 20
+        data = bytearray()
+        data.append(pabtc.opcode.op_hash160)
+        data.extend(pabtc.opcode.op_pushdata(redeem_hash))
+        data.append(pabtc.opcode.op_equal)
+        return data
+
+    @classmethod
+    def p2sh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        redeem = cls.p2ms(m, pubkey)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        redeem = cls.p2wpkh(pubkey_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_hash: bytearray) -> bytearray:
+        assert len(redeem_hash) == 32
+        redeem = cls.p2wsh(redeem_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
+
+    @classmethod
+    def p2wpkh(cls, pubkey_hash: bytearray) -> bytearray:
+        assert len(pubkey_hash) == 20
+        data = bytearray()
+        data.append(pabtc.opcode.op_0)
+        data.extend(pabtc.opcode.op_pushdata(pubkey_hash))
+        return data
+
+    @classmethod
+    def p2wsh(cls, redeem_hash: bytearray) -> bytearray:
+        # The script hash within a p2wsh is a single sha-256. It is not a double sha-256 hash (i.e. hash256) as is
+        # commonly used everywhere else in bitcoin, nor is it the hash160 of a script like in p2sh.
+        assert len(redeem_hash) == 32
+        data = bytearray()
+        data.append(pabtc.opcode.op_0)
+        data.extend(pabtc.opcode.op_pushdata(redeem_hash))
+        return data
+
+    @classmethod
+    def p2wsh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        redeem = cls.p2ms(m, pubkey)
+        redeem_hash = hashwsh(redeem)
+        return cls.p2wsh(redeem_hash)
+
+    @classmethod
+    def p2tr(cls, root: bytearray) -> bytearray:
+        assert len(root) == 32
+        data = bytearray()
+        data.append(pabtc.opcode.op_1)
+        data.extend(pabtc.opcode.op_pushdata(root))
+        return data
+
 # Bitcoin address prefix: https://en.bitcoin.it/wiki/List_of_address_prefixes
 
 
@@ -210,22 +304,15 @@ def address_p2sh(redeem: bytearray) -> str:
 
 
 def address_p2sh_p2ms(n: int, pubkey: typing.List[PubKey]) -> str:
-    redeem_script = []
-    redeem_script.append(pabtc.opcode.op_n(n))
-    for e in pubkey:
-        redeem_script.append(pabtc.opcode.op_pushdata(e.sec()))
-    redeem_script.append(pabtc.opcode.op_n(len(pubkey)))
-    redeem_script.append(pabtc.opcode.op_checkmultisig)
-    redeem_script = script(redeem_script)
-    return address_p2sh(redeem_script)
+    redeem = ScriptPubKey.p2ms(n, pubkey)
+    return address_p2sh(redeem)
 
 
 def address_p2sh_p2wpkh(pubkey: PubKey) -> str:
     # Nested Segwit.
     # See https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki
-    pubkey_hash = hash160(pubkey.sec())
-    redeem_script = script([pabtc.opcode.op_0, pabtc.opcode.op_pushdata(pubkey_hash)])
-    return address_p2sh(redeem_script)
+    redeem = ScriptPubKey.p2wpkh(pubkey.hash())
+    return address_p2sh(redeem)
 
 
 def address_p2wpkh(pubkey: PubKey) -> str:
@@ -737,13 +824,7 @@ def script_pubkey_p2pkh(addr: str) -> bytearray:
     assert data[0] == pabtc.config.current.prefix.base58.p2pkh
     hash = data[0x01:0x15]
     assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
-    return script([
-        pabtc.opcode.op_dup,
-        pabtc.opcode.op_hash160,
-        pabtc.opcode.op_pushdata(hash),
-        pabtc.opcode.op_equalverify,
-        pabtc.opcode.op_checksig,
-    ])
+    return ScriptPubKey.p2pkh(hash)
 
 
 def script_pubkey_p2sh(addr: str) -> bytearray:
@@ -751,27 +832,17 @@ def script_pubkey_p2sh(addr: str) -> bytearray:
     assert data[0] == pabtc.config.current.prefix.base58.p2sh
     hash = data[0x01:0x15]
     assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
-    return script([
-        pabtc.opcode.op_hash160,
-        pabtc.opcode.op_pushdata(hash),
-        pabtc.opcode.op_equal,
-    ])
+    return ScriptPubKey.p2sh(hash)
 
 
 def script_pubkey_p2wpkh(addr: str) -> bytearray:
     hash = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 0, addr)
-    return script([
-        pabtc.opcode.op_0,
-        pabtc.opcode.op_pushdata(hash),
-    ])
+    return ScriptPubKey.p2wpkh(hash)
 
 
 def script_pubkey_p2tr(addr: str) -> bytearray:
     pubx = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, addr)
-    return script([
-        pabtc.opcode.op_1,
-        pabtc.opcode.op_pushdata(pubx),
-    ])
+    return ScriptPubKey.p2tr(pubx)
 
 
 def script_pubkey(addr: str) -> bytearray:

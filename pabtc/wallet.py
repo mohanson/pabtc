@@ -147,13 +147,7 @@ class Tp2shp2ms:
     def __init__(self, pubkey: typing.List[pabtc.core.PubKey], prikey: typing.List[int]) -> None:
         self.prikey = [pabtc.core.PriKey(e) for e in prikey]
         self.pubkey = pubkey
-        script_asts = []
-        script_asts.append(pabtc.opcode.op_n(len(prikey)))
-        for e in self.pubkey:
-            script_asts.append(pabtc.opcode.op_pushdata(e.sec()))
-        script_asts.append(pabtc.opcode.op_n(len(pubkey)))
-        script_asts.append(pabtc.opcode.op_checkmultisig)
-        self.redeem = pabtc.core.script(script_asts)
+        self.redeem = pabtc.core.ScriptPubKey.p2ms(len(prikey), pubkey)
         self.addr = pabtc.core.address_p2sh(self.redeem)
         self.script = pabtc.core.script_pubkey_p2sh(self.addr)
 
@@ -209,14 +203,7 @@ class Tp2shp2wpkh:
     def sign(self, tx: pabtc.core.Transaction) -> None:
         # See: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh-nested-in-bip16-p2sh
         pubkey_hash = pabtc.core.hash160(self.pubkey.sec())
-        script_code = pabtc.core.script([
-            pabtc.opcode.op_pushdata(pabtc.core.script([
-                pabtc.opcode.op_dup,
-                pabtc.opcode.op_hash160,
-                pabtc.opcode.op_pushdata(pubkey_hash),
-                pabtc.opcode.op_equalverify,
-                pabtc.opcode.op_checksig,
-            ]))])
+        script_code = pabtc.opcode.op_pushdata(pabtc.core.ScriptPubKey.p2pkh(pubkey_hash))
         script_sig = pabtc.core.script([pabtc.opcode.op_pushdata(pabtc.core.script([
             pabtc.opcode.op_0,
             pabtc.opcode.op_pushdata(pubkey_hash)
@@ -253,14 +240,7 @@ class Tp2wpkh:
     def sign(self, tx: pabtc.core.Transaction) -> None:
         # See: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh
         pubkey_hash = pabtc.core.hash160(self.pubkey.sec())
-        script_code = pabtc.core.script([
-            pabtc.opcode.op_pushdata(pabtc.core.script([
-                pabtc.opcode.op_dup,
-                pabtc.opcode.op_hash160,
-                pabtc.opcode.op_pushdata(pubkey_hash),
-                pabtc.opcode.op_equalverify,
-                pabtc.opcode.op_checksig,
-            ]))])
+        script_code = pabtc.opcode.op_pushdata(pabtc.core.ScriptPubKey.p2pkh(pubkey_hash))
         for i, e in enumerate(tx.vin):
             s = self.prikey.sign_ecdsa_der(tx.digest_segwit_v0(i, pabtc.core.sighash_all, script_code))
             s.append(pabtc.core.sighash_all)
