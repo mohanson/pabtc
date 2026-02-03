@@ -11,13 +11,13 @@ import typing
 def encode(r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr) -> bytearray:
     body = bytearray()
     body.append(0x02)
-    rbuf = bytearray(r.x.to_bytes(32)).lstrip(bytearray([0x00]))
+    rbuf = bytearray(r.n.to_bytes(32)).lstrip(bytearray([0x00]))
     if rbuf[0] & 0x80:
         rbuf = bytearray([0x00]) + rbuf
     body.append(len(rbuf))
     body.extend(rbuf)
     body.append(0x02)
-    sbuf = bytearray(s.x.to_bytes(32)).lstrip(bytearray([0x00]))
+    sbuf = bytearray(s.n.to_bytes(32)).lstrip(bytearray([0x00]))
     if sbuf[0] & 0x80:
         sbuf = bytearray([0x00]) + sbuf
     body.append(len(sbuf))

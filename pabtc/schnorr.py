@@ -18,7 +18,7 @@ def prikey_implicit(prikey: pabtc.secp256k1.Fr) -> pabtc.secp256k1.Fr:
 
 def pubkey_implicit(pubkey: pabtc.secp256k1.Pt) -> pabtc.secp256k1.Pt:
     # Make sure the public key is even.
-    if pubkey.y.x & 1:
+    if pubkey.y.n & 1:
         return -pubkey
     else:
         return +pubkey
@@ -37,7 +37,7 @@ def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabt
     pubkey = pabtc.secp256k1.G * prikey
     k = prikey_implicit(pabtc.secp256k1.Fr(max(1, secrets.randbelow(pabtc.secp256k1.N))))
     r = pabtc.secp256k1.G * k
-    e_data = bytearray(r.x.x.to_bytes(32) + pubkey.x.x.to_bytes(32) + m.x.to_bytes(32))
+    e_data = bytearray(r.x.n.to_bytes(32) + pubkey.x.n.to_bytes(32) + m.n.to_bytes(32))
     e_hash = hash('BIP0340/challenge', e_data)
     e = pabtc.secp256k1.Fr(int.from_bytes(e_hash))
     s = k + e * prikey
@@ -47,7 +47,7 @@ def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabt
 def verify(pubkey: pabtc.secp256k1.Pt, m: pabtc.secp256k1.Fr, r: pabtc.secp256k1.Pt, s: pabtc.secp256k1.Fr) -> bool:
     # Verify signature (r, s) on message m with public key pubkey.
     pubkey = pubkey_implicit(pubkey)
-    e_data = bytearray(r.x.x.to_bytes(32) + pubkey.x.x.to_bytes(32) + m.x.to_bytes(32))
+    e_data = bytearray(r.x.n.to_bytes(32) + pubkey.x.n.to_bytes(32) + m.n.to_bytes(32))
     e_hash = hash('BIP0340/challenge', e_data)
     e = pabtc.secp256k1.Fr(int.from_bytes(e_hash))
     return pabtc.secp256k1.G * s == r + pubkey * e

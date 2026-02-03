@@ -17,8 +17,9 @@ if args.net == 'testnet':
 
 prikey = pabtc.core.PriKey(int(args.prikey, 0))
 pubkey = prikey.pubkey()
+pubkey_p2tr = bytearray(pabtc.taproot.pubkey_tweak(pubkey.pt(), bytearray()).x.n.to_bytes(32))
 
-print('p2pkh      ', pabtc.core.address_p2pkh(pubkey))
-print('p2sh-p2wpkh', pabtc.core.address_p2sh_p2wpkh(pubkey))
-print('p2wpkh     ', pabtc.core.address_p2wpkh(pubkey))
-print('p2tr       ', pabtc.core.address_p2tr(pubkey, bytearray()))
+print('p2pkh      ', pabtc.core.Address.p2pkh(pubkey.hash()))
+print('p2sh-p2wpkh', pabtc.core.Address.p2sh_p2wpkh(pubkey.hash()))
+print('p2wpkh     ', pabtc.core.Address.p2wpkh(pubkey.hash()))
+print('p2tr       ', pabtc.core.Address.p2tr(pubkey_p2tr))

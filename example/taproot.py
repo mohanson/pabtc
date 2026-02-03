@@ -24,7 +24,8 @@ mast = pabtc.core.TapNode(
 class Tp2trp2pk:
     def __init__(self, pubkey: pabtc.core.PubKey) -> None:
         self.pubkey = pubkey
-        self.addr = pabtc.core.address_p2tr(pubkey, mast.hash)
+        p2tr_pubkey = bytearray(pabtc.taproot.pubkey_tweak(pubkey.pt(), mast.hash).x.n.to_bytes(32))
+        self.addr = pabtc.core.Address.p2tr(p2tr_pubkey)
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
         output_pubkey_byte = bytearray(
             [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
@@ -54,7 +55,8 @@ class Tp2trp2pk:
 class Tp2trp2ms:
     def __init__(self, pubkey: pabtc.core.PubKey) -> None:
         self.pubkey = pubkey
-        self.addr = pabtc.core.address_p2tr(pubkey, mast.hash)
+        p2tr_pubkey = bytearray(pabtc.taproot.pubkey_tweak(pubkey.pt(), mast.hash).x.n.to_bytes(32))
+        self.addr = pabtc.core.Address.p2tr(p2tr_pubkey)
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
         output_pubkey_byte = bytearray(
             [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)

@@ -114,7 +114,7 @@ class Tp2pkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2pkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2pkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2pkh(self.addr)
 
     def __repr__(self) -> str:
@@ -146,7 +146,7 @@ class Tp2shp2ms:
         self.prikey = [pabtc.core.PriKey(e) for e in prikey]
         self.pubkey = pubkey
         self.redeem = pabtc.core.ScriptPubKey.p2ms(self.m, pubkey)
-        self.addr = pabtc.core.address_p2sh(self.redeem)
+        self.addr = pabtc.core.Address.p2sh(pabtc.core.hash160(self.redeem))
         self.script = pabtc.core.script_pubkey_p2sh(self.addr)
 
     def __repr__(self) -> str:
@@ -178,7 +178,7 @@ class Tp2shp2wpkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2sh_p2wpkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2sh_p2wpkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2sh(self.addr)
 
     def __repr__(self) -> str:
@@ -212,7 +212,7 @@ class Tp2wpkh:
     def __init__(self, prikey: int) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2wpkh(self.pubkey)
+        self.addr = pabtc.core.Address.p2wpkh(self.pubkey.hash())
         self.script = pabtc.core.script_pubkey_p2wpkh(self.addr)
 
     def __repr__(self) -> str:
@@ -244,7 +244,8 @@ class Tp2tr:
     def __init__(self, prikey: int, root: bytearray) -> None:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
-        self.addr = pabtc.core.address_p2tr(self.pubkey, root)
+        p2tr_pubkey = bytearray(pabtc.taproot.pubkey_tweak(self.pubkey.pt(), root).x.n.to_bytes(32))
+        self.addr = pabtc.core.Address.p2tr(p2tr_pubkey)
         self.root = root
         self.script = pabtc.core.script_pubkey_p2tr(self.addr)
 
@@ -262,14 +263,10 @@ class Tp2tr:
 
     def sign(self, tx: pabtc.core.Transaction) -> None:
         # See: https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
-        prikey = pabtc.secp256k1.Fr(self.prikey.n)
-        adjust_prikey_byte = pabtc.core.hashtag('TapTweak', bytearray(self.pubkey.x.to_bytes(32)) + self.root)
-        adjust_prikey = pabtc.secp256k1.Fr(int.from_bytes(adjust_prikey_byte))
-        output_prikey = prikey + adjust_prikey
-        output_prikey = pabtc.core.PriKey(output_prikey.x)
+        prikey = pabtc.core.PriKey.fr_decode(pabtc.taproot.prikey_tweak(self.prikey.fr(), self.root))
         for i, e in enumerate(tx.vin):
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, bytearray())
-            s = output_prikey.sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
+            s = prikey.sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness[0] = s
 
     def txin(self, op: pabtc.core.OutPoint) -> pabtc.core.TxIn:

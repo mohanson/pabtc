@@ -53,6 +53,15 @@ class PriKey:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
+    def fr(self) -> pabtc.secp256k1.Fr:
+        # Convert the private key to secp256k1 field representation.
+        return pabtc.secp256k1.Fr(self.n)
+
+    @classmethod
+    def fr_decode(cls, data: pabtc.secp256k1.Fr) -> PriKey:
+        # Convert the secp256k1 field representation to private key.
+        return PriKey(data.n)
+
     def hex(self) -> str:
         # Convert the private key to hex representation.
         return self.n.to_bytes(32).hex()
@@ -71,7 +80,7 @@ class PriKey:
     def pubkey(self) -> PubKey:
         # Get the ecdsa public key corresponding to the private key.
         pubkey = pabtc.secp256k1.G * pabtc.secp256k1.Fr(self.n)
-        return PubKey(pubkey.x.x, pubkey.y.x)
+        return PubKey(pubkey.x.n, pubkey.y.n)
 
     @classmethod
     def random(cls) -> PriKey:
@@ -86,7 +95,7 @@ class PriKey:
             # We require that the S value inside ECDSA signatures is at most the curve order divided by 2 (essentially
             # restricting this value to its lower half range).
             # See: https://github.com/bitcoin/bips/blob/master/bip-0146.mediawiki
-            if s.x * 2 >= pabtc.secp256k1.N:
+            if s.n * 2 >= pabtc.secp256k1.N:
                 s = -s
                 v ^= 1
             return r, s, v
@@ -102,7 +111,7 @@ class PriKey:
         assert len(data) == 32
         m = pabtc.secp256k1.Fr(int.from_bytes(data))
         r, s = pabtc.schnorr.sign(pabtc.secp256k1.Fr(self.n), m)
-        return bytearray(r.x.x.to_bytes(32) + s.x.to_bytes(32))
+        return bytearray(r.x.n.to_bytes(32) + s.n.to_bytes(32))
 
     def wif(self) -> str:
         # Convert the private key to wallet import format. This is the format supported by most third-party wallets.
@@ -161,7 +170,7 @@ class PubKey:
     @classmethod
     def pt_decode(cls, data: pabtc.secp256k1.Pt) -> PubKey:
         # Convert the secp256k1 point to public key.
-        return PubKey(data.x.x, data.y.x)
+        return PubKey(data.x.n, data.y.n)
 
     def sec(self) -> bytearray:
         # Convert the public key to standards for efficient cryptography representation. Elsewhere, it is referred to
@@ -183,7 +192,7 @@ class PubKey:
         if p == 0x04:
             y = int.from_bytes(data[33:65])
         else:
-            y_x_y = x * x * x + pabtc.secp256k1.A.x * x + pabtc.secp256k1.B.x
+            y_x_y = x * x * x + pabtc.secp256k1.A.n * x + pabtc.secp256k1.B.n
             y = pow(y_x_y, (pabtc.secp256k1.P + 1) // 4, pabtc.secp256k1.P)
             if y & 1 != p - 2:
                 y = -y % pabtc.secp256k1.P
@@ -339,59 +348,64 @@ class ScriptSig:
         redeem = ScriptPubKey.p2wsh(redeem_hash)
         return cls.p2sh(script, redeem)
 
-# Bitcoin address prefix: https://en.bitcoin.it/wiki/List_of_address_prefixes
 
+class Address:
+    # Bitcoin address is a string that represents a destination for a bitcoin payment.
 
-def address_p2pkh(pubkey: PubKey) -> str:
-    # Legacy
-    pubkey_hash = hash160(pubkey.sec())
-    data = bytearray([pabtc.config.current.prefix.base58.p2pkh]) + pubkey_hash
-    chk4 = hash256(data)[:4]
-    return pabtc.base58.encode(data + chk4)
+    @classmethod
+    def p2pkh(cls, pubkey_hash: bytearray) -> str:
+        assert len(pubkey_hash) == 20
+        data = bytearray([pabtc.config.current.prefix.base58.p2pkh]) + pubkey_hash
+        chk4 = hash256(data)[:4]
+        return pabtc.base58.encode(data + chk4)
 
+    @classmethod
+    def p2sh(cls, redeem_hash: bytearray) -> str:
+        assert len(redeem_hash) == 20
+        data = bytearray([pabtc.config.current.prefix.base58.p2sh]) + redeem_hash
+        chk4 = hash256(data)[:4]
+        return pabtc.base58.encode(data + chk4)
 
-def address_p2sh(redeem: bytearray) -> str:
-    # Pay to Script Hash.
-    # See: https://github.com/bitcoin/bips/blob/master/bip-0016.mediawiki
-    redeem_hash = hash160(redeem)
-    data = bytearray([pabtc.config.current.prefix.base58.p2sh]) + redeem_hash
-    chk4 = hash256(data)[:4]
-    return pabtc.base58.encode(data + chk4)
+    @classmethod
+    def p2sh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> str:
+        redeem = ScriptPubKey.p2ms(m, pubkey)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
 
+    @classmethod
+    def p2sh_p2wpkh(cls, pubkey_hash: bytearray) -> str:
+        assert len(pubkey_hash) == 20
+        redeem = ScriptPubKey.p2wpkh(pubkey_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
 
-def address_p2sh_p2ms(n: int, pubkey: typing.List[PubKey]) -> str:
-    redeem = ScriptPubKey.p2ms(n, pubkey)
-    return address_p2sh(redeem)
+    @classmethod
+    def p2sh_p2wsh(cls, redeem_hash: bytearray) -> str:
+        assert len(redeem_hash) == 32
+        redeem = ScriptPubKey.p2wsh(redeem_hash)
+        redeem_hash = hash160(redeem)
+        return cls.p2sh(redeem_hash)
 
+    @classmethod
+    def p2wpkh(cls, pubkey_hash: bytearray) -> str:
+        assert len(pubkey_hash) == 20
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, pubkey_hash)
 
-def address_p2sh_p2wpkh(pubkey: PubKey) -> str:
-    # Nested Segwit.
-    # See https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki
-    redeem = ScriptPubKey.p2wpkh(pubkey.hash())
-    return address_p2sh(redeem)
+    @classmethod
+    def p2wsh(cls, redeem_hash: bytearray) -> str:
+        assert len(redeem_hash) == 32
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, redeem_hash)
 
+    @classmethod
+    def p2wsh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> str:
+        redeem = ScriptPubKey.p2ms(m, pubkey)
+        redeem_hash = hashwsh(redeem)
+        return cls.p2wsh(redeem_hash)
 
-def address_p2wpkh(pubkey: PubKey) -> str:
-    # Native SegWit.
-    # See https://github.com/bitcoin/bips/blob/master/bip-0084.mediawiki
-    pubkey_hash = hash160(pubkey.sec())
-    return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, pubkey_hash)
-
-
-def address_p2tr(pubkey: PubKey, root: bytearray) -> str:
-    # Taproot.
-    # See https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
-    origin_pubkey = pubkey.pt()
-    if pubkey.y & 1 != 0:
-        # Taproot requires that the y coordinate of the public key is even.
-        origin_pubkey = -origin_pubkey
-    # There is no script path if root is empty.
-    assert len(root) in [0x00, 0x20]
-    adjust_prikey_byte = hashtag('TapTweak', bytearray(origin_pubkey.x.x.to_bytes(32)) + root)
-    adjust_prikey = pabtc.secp256k1.Fr(int.from_bytes(adjust_prikey_byte))
-    adjust_pubkey = pabtc.secp256k1.G * adjust_prikey
-    output_pubkey = origin_pubkey + adjust_pubkey
-    return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 1, bytearray(output_pubkey.x.x.to_bytes(32)))
+    @classmethod
+    def p2tr(cls, root: bytearray) -> str:
+        assert len(root) == 32
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 1, root)
 
 
 def compact_size_encode(n: int) -> bytearray:
@@ -965,7 +979,7 @@ class Message:
         #   35-38: Segwit P2SH
         #   39-42: Segwit Bech32
         # See: https://github.com/bitcoin/bips/blob/master/bip-0137.mediawiki.
-        sig = bytearray([31 + v]) + bytearray(r.x.to_bytes(32)) + bytearray(s.x.to_bytes(32))
+        sig = bytearray([31 + v]) + bytearray(r.n.to_bytes(32)) + bytearray(s.n.to_bytes(32))
         return base64.b64encode(sig).decode()
 
     def pubkey(self, sig: str) -> PubKey:
