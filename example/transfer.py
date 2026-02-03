@@ -18,7 +18,7 @@ if args.net == 'mainnet':
 if args.net == 'testnet':
     pabtc.config.current = pabtc.config.testnet
 
-accept_script = pabtc.core.script_pubkey(args.to)
+accept_script = pabtc.core.ScriptPubKey.address(args.to)
 accept_value = int(args.value * pabtc.denomination.bitcoin)
 prikey = int(args.prikey, 0)
 wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(prikey))

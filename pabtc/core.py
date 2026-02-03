@@ -292,6 +292,27 @@ class ScriptPubKey:
         data.extend(pabtc.opcode.op_pushdata(root))
         return data
 
+    @classmethod
+    def address(cls, address: str) -> bytearray:
+        if address.startswith(pabtc.config.current.prefix.bech32):
+            if address[len(pabtc.config.current.prefix.bech32) + 1] == 'q':
+                data = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 0, address)
+                if len(data) == 20:
+                    return cls.p2wpkh(data)
+                if len(data) == 32:
+                    return cls.p2wsh(data)
+            if address[len(pabtc.config.current.prefix.bech32) + 1] == 'p':
+                data = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, address)
+                return cls.p2tr(data)
+        data = pabtc.base58.decode(address)
+        if data[0] == pabtc.config.current.prefix.base58.p2pkh:
+            assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
+            return ScriptPubKey.p2pkh(data[0x01:0x15])
+        if data[0] == pabtc.config.current.prefix.base58.p2sh:
+            assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
+            return ScriptPubKey.p2sh(data[0x01:0x15])
+        raise Exception('unreachable')
+
 
 class ScriptSig:
     # A script sig provides the unlocking code for a previous output. Each output in a transaction has a locking code
@@ -920,45 +941,6 @@ class Transaction:
         size_legacy = len(self.serialize_legacy())
         size_segwit = len(self.serialize_segwit()) - size_legacy
         return size_legacy * 4 + size_segwit
-
-
-def script_pubkey_p2pkh(addr: str) -> bytearray:
-    data = pabtc.base58.decode(addr)
-    assert data[0] == pabtc.config.current.prefix.base58.p2pkh
-    hash = data[0x01:0x15]
-    assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
-    return ScriptPubKey.p2pkh(hash)
-
-
-def script_pubkey_p2sh(addr: str) -> bytearray:
-    data = pabtc.base58.decode(addr)
-    assert data[0] == pabtc.config.current.prefix.base58.p2sh
-    hash = data[0x01:0x15]
-    assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
-    return ScriptPubKey.p2sh(hash)
-
-
-def script_pubkey_p2wpkh(addr: str) -> bytearray:
-    hash = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 0, addr)
-    return ScriptPubKey.p2wpkh(hash)
-
-
-def script_pubkey_p2tr(addr: str) -> bytearray:
-    pubx = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, addr)
-    return ScriptPubKey.p2tr(pubx)
-
-
-def script_pubkey(addr: str) -> bytearray:
-    if addr.startswith(pabtc.config.current.prefix.bech32):
-        if addr[len(pabtc.config.current.prefix.bech32) + 1] == 'q':
-            return script_pubkey_p2wpkh(addr)
-        if addr[len(pabtc.config.current.prefix.bech32) + 1] == 'p':
-            return script_pubkey_p2tr(addr)
-    if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.base58.p2pkh:
-        return script_pubkey_p2pkh(addr)
-    if pabtc.base58.decode(addr)[0] == pabtc.config.current.prefix.base58.p2sh:
-        return script_pubkey_p2sh(addr)
-    raise Exception('unreachable')
 
 
 def script(i: typing.List[int | bytearray]) -> bytearray:

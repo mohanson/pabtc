@@ -88,7 +88,7 @@ class SearcherMempoolSpace:
         for e in requests.get(self.get_url(addr)).json():
             out_point = pabtc.core.OutPoint(bytearray.fromhex(e['txid'])[::-1], e['vout'])
             # Mempool's api does not provide script_pubkey, so we have to infer it from the address.
-            script_pubkey = pabtc.core.script_pubkey(addr)
+            script_pubkey = pabtc.core.ScriptPubKey.address(addr)
             amount = e['value']
             utxo = Utxo(out_point, pabtc.core.TxOut(amount, script_pubkey))
             r.append(utxo)
@@ -115,7 +115,7 @@ class Tp2pkh:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
         self.addr = pabtc.core.Address.p2pkh(self.pubkey.hash())
-        self.script = pabtc.core.script_pubkey_p2pkh(self.addr)
+        self.script = pabtc.core.ScriptPubKey.address(self.addr)
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
@@ -147,7 +147,7 @@ class Tp2shp2ms:
         self.pubkey = pubkey
         self.redeem = pabtc.core.ScriptPubKey.p2ms(self.m, pubkey)
         self.addr = pabtc.core.Address.p2sh(pabtc.core.hash160(self.redeem))
-        self.script = pabtc.core.script_pubkey_p2sh(self.addr)
+        self.script = pabtc.core.ScriptPubKey.address(self.addr)
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
@@ -179,7 +179,7 @@ class Tp2shp2wpkh:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
         self.addr = pabtc.core.Address.p2sh_p2wpkh(self.pubkey.hash())
-        self.script = pabtc.core.script_pubkey_p2sh(self.addr)
+        self.script = pabtc.core.ScriptPubKey.address(self.addr)
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
@@ -213,7 +213,7 @@ class Tp2wpkh:
         self.prikey = pabtc.core.PriKey(prikey)
         self.pubkey = self.prikey.pubkey()
         self.addr = pabtc.core.Address.p2wpkh(self.pubkey.hash())
-        self.script = pabtc.core.script_pubkey_p2wpkh(self.addr)
+        self.script = pabtc.core.ScriptPubKey.address(self.addr)
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
@@ -247,7 +247,7 @@ class Tp2tr:
         p2tr_pubkey = bytearray(pabtc.taproot.pubkey_tweak(self.pubkey.pt(), root).x.n.to_bytes(32))
         self.addr = pabtc.core.Address.p2tr(p2tr_pubkey)
         self.root = root
-        self.script = pabtc.core.script_pubkey_p2tr(self.addr)
+        self.script = pabtc.core.ScriptPubKey.address(self.addr)
 
     def __repr__(self) -> str:
         return json.dumps(self.json())

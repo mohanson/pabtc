@@ -37,23 +37,23 @@ def test_validate_address():
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
-    assert rets['scriptPubKey'] == pabtc.core.script_pubkey_p2pkh(addr).hex()
+    assert rets['scriptPubKey'] == pabtc.core.ScriptPubKey.address(addr).hex()
     addr = pabtc.core.Address.p2sh_p2wpkh(pubkey.hash())
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
-    assert rets['scriptPubKey'] == pabtc.core.script_pubkey_p2sh(addr).hex()
+    assert rets['scriptPubKey'] == pabtc.core.ScriptPubKey.address(addr).hex()
     addr = pabtc.core.Address.p2wpkh(pubkey.hash())
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
-    assert rets['scriptPubKey'] == pabtc.core.script_pubkey_p2wpkh(addr).hex()
+    assert rets['scriptPubKey'] == pabtc.core.ScriptPubKey.address(addr).hex()
     pubkey_p2tr = bytearray(pabtc.taproot.pubkey_tweak(pubkey.pt(), bytearray()).x.n.to_bytes(32))
     addr = pabtc.core.Address.p2tr(pubkey_p2tr)
     rets = pabtc.rpc.validate_address(addr)
     assert rets['isvalid'] is True
     assert rets['address'] == addr
-    assert rets['scriptPubKey'] == pabtc.core.script_pubkey_p2tr(addr).hex()
+    assert rets['scriptPubKey'] == pabtc.core.ScriptPubKey.address(addr).hex()
 
 
 def test_verify_message():
