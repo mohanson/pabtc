@@ -121,6 +121,31 @@ def test_address_p2tr():
     assert addr == 'tb1pmfr3p9j00pfxjh0zmgp99y8zftmd3s5pmedqhyptwy6lm87hf5ssk79hv2'
 
 
+def test_address_script_pubkey():
+    pabtc.config.current = pabtc.config.mainnet
+    script_pubkey = bytearray.fromhex('76a91455ae51684c43435da751ac8d2173b2652eb6410588ac')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == '18p3G8gQ3oKy4U9EqnWs7UZswdqAMhE3r8'
+    script_pubkey = bytearray.fromhex('a914748284390f9e263a4b766a75d0633c50426eb87587')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == '3CK4fEwbMP7heJarmU4eqA3sMbVJyEnU3V'
+    script_pubkey = bytearray.fromhex('a9146d3ed4cf55dc6752a12d3091d436ef8f0f982ff887')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == '3Beer3irc1vgs76ENA4coqsEQpGZeM5CTd'
+    script_pubkey = bytearray.fromhex('a914257014cec2f75c19367b2a6a0e08b9f304108e3b87')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == '356yCBhiW9tqg5iiPDhEZ8f8t3JfqkEihA'
+    script_pubkey = bytearray.fromhex('0014841b80d2cc75f5345c482af96294d04fdd66b2b7')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == 'bc1qssdcp5kvwh6nghzg9tuk99xsflwkdv4hgvq58q'
+    script_pubkey = bytearray.fromhex('002065f91a53cb7120057db3d378bd0f7d944167d43a7dcbff15d6afc4823f1d3ed3')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == 'bc1qvhu3557twysq2ldn6dut6rmaj3qk04p60h9l79wk4lzgy0ca8mfsnffz65'
+    script_pubkey = bytearray.fromhex('51200f0c8db753acbd17343a39c2f3f4e35e4be6da749f9e35137ab220e7b238a667')
+    addr = pabtc.core.Address.script_pubkey(script_pubkey)
+    assert addr == 'bc1ppuxgmd6n4j73wdp688p08a8rte97dkn5n70r2ym6kgsw0v3c5ensrytduf'
+
+
 def test_compact_size():
     for n, b in [
         [0xbb, bytearray([0xbb])],

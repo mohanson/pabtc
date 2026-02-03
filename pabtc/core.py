@@ -407,6 +407,39 @@ class Address:
         assert len(root) == 32
         return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 1, root)
 
+    @classmethod
+    def script_pubkey(cls, script_pubkey: bytearray) -> str:
+        if len(script_pubkey) == 25 and all([
+            script_pubkey[0x00] == pabtc.opcode.op_dup,
+            script_pubkey[0x01] == pabtc.opcode.op_hash160,
+            script_pubkey[0x02] == pabtc.opcode.op_data_20,
+            script_pubkey[0x17] == pabtc.opcode.op_equalverify,
+            script_pubkey[0x18] == pabtc.opcode.op_checksig,
+        ]):
+            return cls.p2pkh(script_pubkey[0x03:0x17])
+        if len(script_pubkey) == 23 and all([
+            script_pubkey[0x00] == pabtc.opcode.op_hash160,
+            script_pubkey[0x01] == pabtc.opcode.op_data_20,
+            script_pubkey[0x16] == pabtc.opcode.op_equal,
+        ]):
+            return cls.p2sh(script_pubkey[0x02:0x16])
+        if len(script_pubkey) == 22 and all([
+            script_pubkey[0x00] == pabtc.opcode.op_0,
+            script_pubkey[0x01] == pabtc.opcode.op_data_20,
+        ]):
+            return cls.p2wpkh(script_pubkey[0x02:0x16])
+        if len(script_pubkey) == 34 and all([
+            script_pubkey[0x00] == pabtc.opcode.op_0,
+            script_pubkey[0x01] == pabtc.opcode.op_data_32,
+        ]):
+            return cls.p2wsh(script_pubkey[0x02:0x22])
+        if len(script_pubkey) == 34 and all([
+            script_pubkey[0x00] == pabtc.opcode.op_1,
+            script_pubkey[0x01] == pabtc.opcode.op_data_32,
+        ]):
+            return cls.p2tr(script_pubkey[0x02:0x22])
+        raise Exception('unreachable')
+
 
 def compact_size_encode(n: int) -> bytearray:
     # Integer can be encoded depending on the represented value to save space. Variable length integers always precede
