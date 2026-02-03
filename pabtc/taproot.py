@@ -1,5 +1,5 @@
-import pabtc.secp256k1
 import pabtc.schnorr
+import pabtc.secp256k1
 
 
 def prikey_tweak(prikey: pabtc.secp256k1.Fr, merkle: bytearray) -> pabtc.secp256k1.Fr:

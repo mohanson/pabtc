@@ -6,6 +6,7 @@ import json
 import math
 import pabtc.base58
 import pabtc.bech32
+import pabtc.compact_size
 import pabtc.config
 import pabtc.denomination
 import pabtc.der
@@ -462,40 +463,6 @@ class Address:
         raise Exception('unreachable')
 
 
-def compact_size_encode(n: int) -> bytearray:
-    # Integer can be encoded depending on the represented value to save space. Variable length integers always precede
-    # an array/vector of a type of data that may vary in length. Longer numbers are encoded in little endian.
-    # See: https://en.bitcoin.it/wiki/Protocol_documentation#Variable_length_integer
-    assert n >= 0
-    assert n <= 0xffffffffffffffff
-    if n <= 0xfc:
-        return bytearray([n])
-    if n <= 0xffff:
-        return bytearray([0xfd]) + bytearray(n.to_bytes(2, 'little'))
-    if n <= 0xffffffff:
-        return bytearray([0xfe]) + bytearray(n.to_bytes(4, 'little'))
-    if n <= 0xffffffffffffffff:
-        return bytearray([0xff]) + bytearray(n.to_bytes(8, 'little'))
-    raise Exception('unreachable')
-
-
-def compact_size_decode(data: bytearray) -> int:
-    return compact_size_decode_reader(io.BytesIO(data))
-
-
-def compact_size_decode_reader(reader: typing.BinaryIO) -> int:
-    head = reader.read(1)[0]
-    if head <= 0xfc:
-        return head
-    if head == 0xfd:
-        return int.from_bytes(reader.read(2), 'little')
-    if head == 0xfe:
-        return int.from_bytes(reader.read(4), 'little')
-    if head == 0xff:
-        return int.from_bytes(reader.read(8), 'little')
-    raise Exception('unreachable')
-
-
 def difficulty_target(bits: int) -> int:
     assert bits >= 0x00
     assert bits <= 0xffffffff
@@ -726,13 +693,13 @@ class Transaction:
             snap = bytearray()
             for e in self.vout:
                 snap.extend(e.value.to_bytes(8, 'little'))
-                snap.extend(compact_size_encode(len(e.script_pubkey)))
+                snap.extend(pabtc.compact_size.encode(len(e.script_pubkey)))
                 snap.extend(e.script_pubkey)
             hash = hash256(snap)
         if ht.o == sighash_single and i < len(self.vout):
             snap = bytearray()
             snap.extend(self.vout[i].value.to_bytes(8, 'little'))
-            snap.extend(compact_size_encode(len(self.vout[i].script_pubkey)))
+            snap.extend(pabtc.compact_size.encode(len(self.vout[i].script_pubkey)))
             snap.extend(self.vout[i].script_pubkey)
             hash = hash256(snap)
         data.extend(hash)
@@ -771,7 +738,7 @@ class Transaction:
             snap = bytearray()
             for e in self.vin:
                 utxo = e.out_point.load()
-                snap.extend(compact_size_encode(len(utxo.script_pubkey)))
+                snap.extend(pabtc.compact_size.encode(len(utxo.script_pubkey)))
                 snap.extend(utxo.script_pubkey)
             data.extend(bytearray(hashlib.sha256(snap).digest()))
             # Append the SHA256 of the serialization of all input nSequence.
@@ -783,7 +750,7 @@ class Transaction:
             snap = bytearray()
             for e in self.vout:
                 snap.extend(e.value.to_bytes(8, 'little'))
-                snap.extend(compact_size_encode(len(e.script_pubkey)))
+                snap.extend(pabtc.compact_size.encode(len(e.script_pubkey)))
                 snap.extend(e.script_pubkey)
             data.extend(bytearray(hashlib.sha256(snap).digest()))
         spend_type = 0x00
@@ -795,7 +762,7 @@ class Transaction:
             data.extend(self.vin[i].out_point.vout.to_bytes(4, 'little'))
             utxo = self.vin[i].out_point.load()
             data.extend(utxo.value.to_bytes(8, 'little'))
-            data.extend(compact_size_encode(len(utxo.script_pubkey)))
+            data.extend(pabtc.compact_size.encode(len(utxo.script_pubkey)))
             data.extend(utxo.script_pubkey)
             data.extend(self.vin[i].sequence.to_bytes(4, 'little'))
         if ht.i != sighash_anyone_can_pay:
@@ -805,14 +772,14 @@ class Transaction:
             # Using SIGHASH_SINGLE without a "corresponding output" (an output with the same index as the input being
             # verified) cause validation failure.
             snap.extend(self.vout[i].value.to_bytes(8, 'little'))
-            snap.extend(compact_size_encode(len(self.vout[i].script_pubkey)))
+            snap.extend(pabtc.compact_size.encode(len(self.vout[i].script_pubkey)))
             snap.extend(self.vout[i].script_pubkey)
             data.extend(bytearray(hashlib.sha256(snap).digest()))
         # See: https://github.com/bitcoin/bips/blob/master/bip-0342.mediawiki
         if script_code:
             snap = bytearray()
             snap.append(0xc0)
-            snap.extend(compact_size_encode(len(script_code)))
+            snap.extend(pabtc.compact_size.encode(len(script_code)))
             snap.extend(script_code)
             data.extend(hashtag('TapLeaf', snap))
             data.append(0x00)
@@ -838,17 +805,17 @@ class Transaction:
     def serialize_legacy(self) -> bytearray:
         data = bytearray()
         data.extend(self.version.to_bytes(4, 'little'))
-        data.extend(compact_size_encode(len(self.vin)))
+        data.extend(pabtc.compact_size.encode(len(self.vin)))
         for i in self.vin:
             data.extend(i.out_point.txid)
             data.extend(i.out_point.vout.to_bytes(4, 'little'))
-            data.extend(compact_size_encode(len(i.script_sig)))
+            data.extend(pabtc.compact_size.encode(len(i.script_sig)))
             data.extend(i.script_sig)
             data.extend(i.sequence.to_bytes(4, 'little'))
-        data.extend(compact_size_encode(len(self.vout)))
+        data.extend(pabtc.compact_size.encode(len(self.vout)))
         for o in self.vout:
             data.extend(o.value.to_bytes(8, 'little'))
-            data.extend(compact_size_encode(len(o.script_pubkey)))
+            data.extend(pabtc.compact_size.encode(len(o.script_pubkey)))
             data.extend(o.script_pubkey)
         data.extend(self.locktime.to_bytes(4, 'little'))
         return data
@@ -858,17 +825,17 @@ class Transaction:
         data.extend(self.version.to_bytes(4, 'little'))
         data.append(0x00)
         data.append(0x01)
-        data.extend(compact_size_encode(len(self.vin)))
+        data.extend(pabtc.compact_size.encode(len(self.vin)))
         for i in self.vin:
             data.extend(i.out_point.txid)
             data.extend(i.out_point.vout.to_bytes(4, 'little'))
-            data.extend(compact_size_encode(len(i.script_sig)))
+            data.extend(pabtc.compact_size.encode(len(i.script_sig)))
             data.extend(i.script_sig)
             data.extend(i.sequence.to_bytes(4, 'little'))
-        data.extend(compact_size_encode(len(self.vout)))
+        data.extend(pabtc.compact_size.encode(len(self.vout)))
         for o in self.vout:
             data.extend(o.value.to_bytes(8, 'little'))
-            data.extend(compact_size_encode(len(o.script_pubkey)))
+            data.extend(pabtc.compact_size.encode(len(o.script_pubkey)))
             data.extend(o.script_pubkey)
         for i in self.vin:
             data.extend(witness_encode(i.witness))
@@ -889,15 +856,15 @@ class Transaction:
         reader = io.BytesIO(data)
         tx = Transaction(0, [], [], 0)
         tx.version = int.from_bytes(reader.read(4), 'little')
-        for _ in range(compact_size_decode_reader(reader)):
+        for _ in range(pabtc.compact_size.decode_reader(reader)):
             txid = bytearray(reader.read(32))
             vout = int.from_bytes(reader.read(4), 'little')
-            script_sig = bytearray(reader.read(compact_size_decode_reader(reader)))
+            script_sig = bytearray(reader.read(pabtc.compact_size.decode_reader(reader)))
             sequence = int.from_bytes(reader.read(4), 'little')
             tx.vin.append(TxIn(OutPoint(txid, vout), script_sig, sequence, []))
-        for _ in range(compact_size_decode_reader(reader)):
+        for _ in range(pabtc.compact_size.decode_reader(reader)):
             value = int.from_bytes(reader.read(8), 'little')
-            script_pubkey = bytearray(reader.read(compact_size_decode_reader(reader)))
+            script_pubkey = bytearray(reader.read(pabtc.compact_size.decode_reader(reader)))
             tx.vout.append(TxOut(value, script_pubkey))
         tx.locktime = int.from_bytes(reader.read(4), 'little')
         return tx
@@ -909,15 +876,15 @@ class Transaction:
         tx.version = int.from_bytes(reader.read(4), 'little')
         assert reader.read(1)[0] == 0x00
         assert reader.read(1)[0] == 0x01
-        for _ in range(compact_size_decode_reader(reader)):
+        for _ in range(pabtc.compact_size.decode_reader(reader)):
             txid = bytearray(reader.read(32))
             vout = int.from_bytes(reader.read(4), 'little')
-            script_sig = bytearray(reader.read(compact_size_decode_reader(reader)))
+            script_sig = bytearray(reader.read(pabtc.compact_size.decode_reader(reader)))
             sequence = int.from_bytes(reader.read(4), 'little')
             tx.vin.append(TxIn(OutPoint(txid, vout), script_sig, sequence, []))
-        for _ in range(compact_size_decode_reader(reader)):
+        for _ in range(pabtc.compact_size.decode_reader(reader)):
             value = int.from_bytes(reader.read(8), 'little')
-            script_pubkey = bytearray(reader.read(compact_size_decode_reader(reader)))
+            script_pubkey = bytearray(reader.read(pabtc.compact_size.decode_reader(reader)))
             tx.vout.append(TxOut(value, script_pubkey))
         for i in range(len(tx.vin)):
             tx.vin[i].witness = witness_decode_reader(reader)
@@ -955,9 +922,9 @@ def script(i: typing.List[int | bytearray]) -> bytearray:
 
 def witness_encode(wits: typing.List[bytearray]) -> bytearray:
     data = bytearray()
-    data.extend(compact_size_encode(len(wits)))
+    data.extend(pabtc.compact_size.encode(len(wits)))
     for e in wits:
-        data.extend(compact_size_encode(len(e)))
+        data.extend(pabtc.compact_size.encode(len(e)))
         data.extend(e)
     return data
 
@@ -968,8 +935,8 @@ def witness_decode(data: bytearray) -> typing.List[bytearray]:
 
 def witness_decode_reader(r: typing.BinaryIO) -> typing.List[bytearray]:
     wits = []
-    for _ in range(compact_size_decode_reader(r)):
-        wits.append(bytearray(r.read(compact_size_decode_reader(r))))
+    for _ in range(pabtc.compact_size.decode_reader(r)):
+        wits.append(bytearray(r.read(pabtc.compact_size.decode_reader(r))))
     return wits
 
 
@@ -980,9 +947,9 @@ class Message:
     def hash(self) -> bytearray:
         b = bytearray()
         # Text used to signify that a signed message follows and to prevent inadvertently signing a transaction.
-        b.extend(pabtc.core.compact_size_encode(24))
+        b.extend(pabtc.core.pabtc.compact_size.encode(24))
         b.extend(bytearray('Bitcoin Signed Message:\n'.encode()))
-        b.extend(pabtc.core.compact_size_encode(len(self.data)))
+        b.extend(pabtc.core.pabtc.compact_size.encode(len(self.data)))
         b.extend(bytearray(self.data.encode()))
         return pabtc.core.hash256(b)
 
@@ -1011,7 +978,7 @@ class TapLeaf:
     def __init__(self, script: bytearray) -> None:
         data = bytearray()
         data.append(0xc0)
-        data.extend(compact_size_encode(len(script)))
+        data.extend(pabtc.compact_size.encode(len(script)))
         data.extend(script)
         self.hash = hashtag('TapLeaf', data)
         self.script = script

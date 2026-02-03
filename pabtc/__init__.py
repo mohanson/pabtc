@@ -1,5 +1,6 @@
 from . import base58
 from . import bech32
+from . import compact_size
 from . import config
 from . import core
 from . import denomination
