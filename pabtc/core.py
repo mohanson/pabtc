@@ -910,16 +910,6 @@ class Transaction:
         return size_legacy * 4 + size_segwit
 
 
-def script(i: typing.List[int | bytearray]) -> bytearray:
-    r = bytearray()
-    for e in i:
-        if isinstance(e, int):
-            r.append(e)
-        if isinstance(e, bytearray):
-            r.extend(e)
-    return r
-
-
 def witness_encode(wits: typing.List[bytearray]) -> bytearray:
     data = bytearray()
     data.extend(pabtc.compact_size.encode(len(wits)))
