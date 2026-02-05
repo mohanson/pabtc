@@ -5,51 +5,39 @@ import pabtc
 
 # Here created two scripts, one of which is a p2pk script, which requires that it can only be unlocked by private key 2,
 # and the other is an 2-of-2 multisig script.
+prikey = pabtc.core.PriKey(1)
+pubkey = prikey.pubkey()
 mast = pabtc.core.TapBranch(
     pabtc.core.TapLeaf(pabtc.core.TapScript.p2pk(pabtc.core.PriKey(2).pubkey())),
     pabtc.core.TapLeaf(pabtc.core.TapScript.p2ms(2, [pabtc.core.PriKey(3).pubkey(), pabtc.core.PriKey(4).pubkey()])),
 )
+prikey_tweak = pabtc.taproot.prikey_tweak(prikey.fr(), mast.hash)
+pubkey_tweak = pabtc.taproot.pubkey_tweak(pubkey.pt(), mast.hash)
+root = bytearray(pubkey_tweak.x.n.to_bytes(32))
 
 
 class Signerp2trp2pk(pabtc.wallet.Signer):
-    def __init__(self, pubkey: pabtc.core.PubKey) -> None:
-        self.pubkey = pubkey
-        self.addr = pabtc.core.Address.p2tr(pubkey.tr(mast.hash))
-        self.script = pabtc.core.ScriptPubKey.address(self.addr)
-        output_pubkey_byte = bytearray(
-            [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
-        output_pubkey = pabtc.core.PubKey.sec_decode(output_pubkey_byte)
-        # Control byte with leaf version and parity bit.
-        if output_pubkey.y & 1:
-            self.prefix = 0xc1
-        else:
-            self.prefix = 0xc0
+    def __init__(self) -> None:
+        self.script = pabtc.core.ScriptPubKey.p2tr(root)
+        self.prefix = 0xc0 + (pubkey.y & 1)
+        self.addr = pabtc.core.Address.p2tr(root)
 
     def sign(self, tx: pabtc.core.Transaction) -> None:
         assert isinstance(mast.l, pabtc.core.TapLeaf)
         for i, e in enumerate(tx.vin):
             m = tx.digest_segwit_v1(i, pabtc.core.sighash_all, mast.l.script)
-            s = pabtc.core.PriKey(2).sign_schnorr(m) + bytearray([pabtc.core.sighash_all])
             e.witness = [
-                s,
+                pabtc.core.PriKey(2).sign_schnorr(m) + bytearray([pabtc.core.sighash_all]),
                 mast.l.script,
-                bytearray([self.prefix]) + self.pubkey.sec()[1:] + mast.r.hash,
+                bytearray([self.prefix]) + pubkey.sec()[1:] + mast.r.hash,
             ]
 
 
 class Signerp2trp2ms(pabtc.wallet.Signer):
-    def __init__(self, pubkey: pabtc.core.PubKey) -> None:
-        self.pubkey = pubkey
-        self.addr = pabtc.core.Address.p2tr(pubkey.tr(mast.hash))
-        self.script = pabtc.core.ScriptPubKey.address(self.addr)
-        output_pubkey_byte = bytearray(
-            [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
-        output_pubkey = pabtc.core.PubKey.sec_decode(output_pubkey_byte)
-        # Control byte with leaf version and parity bit.
-        if output_pubkey.y & 1:
-            self.prefix = 0xc1
-        else:
-            self.prefix = 0xc0
+    def __init__(self) -> None:
+        self.script = pabtc.core.ScriptPubKey.p2tr(root)
+        self.prefix = 0xc0 + (pubkey.y & 1)
+        self.addr = pabtc.core.Address.p2tr(root)
 
     def sign(self, tx: pabtc.core.Transaction) -> None:
         assert isinstance(mast.r, pabtc.core.TapLeaf)
@@ -59,7 +47,7 @@ class Signerp2trp2ms(pabtc.wallet.Signer):
                 pabtc.core.PriKey(4).sign_schnorr(m) + bytearray([pabtc.core.sighash_all]),
                 pabtc.core.PriKey(3).sign_schnorr(m) + bytearray([pabtc.core.sighash_all]),
                 mast.r.script,
-                bytearray([self.prefix]) + self.pubkey.sec()[1:] + mast.l.hash,
+                bytearray([self.prefix]) + pubkey.sec()[1:] + mast.l.hash,
             ]
 
 
@@ -84,7 +72,7 @@ print('main: spending by key path done')
 # Spending by script path: pay to public key.
 mate.transfer(user_p2tr.script, 1 * pabtc.denomination.bitcoin)
 assert user_p2tr.balance() == pabtc.denomination.bitcoin
-user_p2pk = pabtc.wallet.Wallet(Signerp2trp2pk(user_p2tr_signer.pubkey))
+user_p2pk = pabtc.wallet.Wallet(Signerp2trp2pk())
 print('main: spending by script path p2pk')
 user_p2pk.transfer_all(mate.script)
 assert user_p2tr.balance() == 0
@@ -93,7 +81,7 @@ print('main: spending by script path p2pk done')
 # Spending by script path: pay to 2-of-2 multisig script.
 mate.transfer(user_p2tr.script, 1 * pabtc.denomination.bitcoin)
 assert user_p2tr.balance() == pabtc.denomination.bitcoin
-user_p2ms = pabtc.wallet.Wallet(Signerp2trp2ms(user_p2tr_signer.pubkey))
+user_p2ms = pabtc.wallet.Wallet(Signerp2trp2ms())
 print('main: spending by script path p2ms')
 user_p2ms.transfer_all(mate.script)
 assert user_p2tr.balance() == 0
