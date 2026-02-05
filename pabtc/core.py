@@ -541,15 +541,20 @@ class TapScript:
 
 
 class HashType:
+    # HashType represents the signature hash type used in bitcoin transactions to control which parts of the
+    # transaction are signed. It determines what can be modified without invalidating the signature.
+    # See: https://github.com/bitcoin/bips/blob/master/bip-0143.mediawiki
+    # See: https://github.com/bitcoin/bips/blob/master/bip-0341.mediawiki
+
     def __init__(self, n: int) -> None:
         assert n in [
-            sighash_default,
-            sighash_all,
-            sighash_none,
-            sighash_single,
-            sighash_anyone_can_pay | sighash_all,
-            sighash_anyone_can_pay | sighash_none,
-            sighash_anyone_can_pay | sighash_single,
+            sighash_default,                          # 0x00: Default for Taproot (equivalent to ALL)
+            sighash_all,                              # 0x01: Sign all inputs and outputs
+            sighash_none,                             # 0x02: Sign all inputs, no outputs
+            sighash_single,                           # 0x03: Sign all inputs, only the output at the same index
+            sighash_anyone_can_pay | sighash_all,     # 0x81: Sign only this input, all outputs
+            sighash_anyone_can_pay | sighash_none,    # 0x82: Sign only this input, no outputs
+            sighash_anyone_can_pay | sighash_single,  # 0x83: Sign only this input, only corresponding output
         ]
         self.i = n & sighash_anyone_can_pay
         self.o = n & 0x3
@@ -558,33 +563,36 @@ class HashType:
 
 
 class OutPoint:
-    def __init__(self, txid: bytearray, vout: int) -> None:
+    # A combination of a transaction hash and an index n into its vout.
+
+    def __init__(self, txid: bytearray, n: int) -> None:
         assert len(txid) == 32
-        assert vout >= 0
-        assert vout <= 0xffffffff
+        assert n >= 0
+        assert n <= 0xffffffff
         self.txid = txid
-        self.vout = vout
+        self.n = n
 
     def __eq__(self, other) -> bool:
         return all([
             self.txid == other.txid,
-            self.vout == other.vout,
+            self.n == other.n,
         ])
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
     def copy(self) -> OutPoint:
-        return OutPoint(self.txid.copy(), self.vout)
+        return OutPoint(self.txid.copy(), self.n)
 
     def json(self) -> typing.Dict:
         return {
             'txid': self.txid.hex(),
-            'vout': self.vout,
+            'n': self.n,
         }
 
-    def load(self):
-        rpcret = pabtc.rpc.get_tx_out(self.txid[::-1].hex(), self.vout)
+    def load(self) -> TxOut:
+        # Load the tx out referenced by this out point via rpc.
+        rpcret = pabtc.rpc.get_tx_out(self.txid[::-1].hex(), self.n)
         script_pubkey = bytearray.fromhex(rpcret['scriptPubKey']['hex'])
         amount = rpcret['value'] * pabtc.denomination.bitcoin
         amount = int(amount.to_integral_exact())
@@ -592,6 +600,9 @@ class OutPoint:
 
 
 class TxIn:
+    # An input of a transaction. It contains the location of the previous transaction's output that it claims and a
+    # signature that matches the output's public key.
+
     def __init__(
         self,
         out_point: OutPoint,
@@ -630,6 +641,8 @@ class TxIn:
 
 
 class TxOut:
+    # An output of a transaction. It contains the public key that the next input must be able to sign with to claim it.
+
     def __init__(self, value: int, script_pubkey: bytearray) -> None:
         assert value >= 0
         assert value <= 0xffffffffffffffff
@@ -658,6 +671,7 @@ class TxOut:
 class Transaction:
     # Referring to the design of Bitcoin core.
     # See: https://github.com/bitcoin/bitcoin/blob/master/src/primitives/transaction.h
+
     def __init__(self, version: int, vin: typing.List[TxIn], vout: typing.List[TxOut], locktime: int) -> None:
         self.version = version
         self.vin = vin
@@ -716,7 +730,7 @@ class Transaction:
             snap = bytearray()
             for e in self.vin:
                 snap.extend(e.out_point.txid)
-                snap.extend(e.out_point.vout.to_bytes(4, 'little'))
+                snap.extend(e.out_point.n.to_bytes(4, 'little'))
             hash = hash256(snap)
         data.extend(hash)
         # Append hash sequence.
@@ -729,7 +743,7 @@ class Transaction:
         data.extend(hash)
         # Append outpoint.
         data.extend(self.vin[i].out_point.txid)
-        data.extend(self.vin[i].out_point.vout.to_bytes(4, 'little'))
+        data.extend(self.vin[i].out_point.n.to_bytes(4, 'little'))
         # Append script code of the input.
         data.extend(script_code)
         # Append value of the output spent by this input.
@@ -775,7 +789,7 @@ class Transaction:
             snap = bytearray()
             for e in self.vin:
                 snap.extend(e.out_point.txid)
-                snap.extend(e.out_point.vout.to_bytes(4, 'little'))
+                snap.extend(e.out_point.n.to_bytes(4, 'little'))
             data.extend(bytearray(hashlib.sha256(snap).digest()))
             # Append the SHA256 of the serialization of all input amounts.
             snap = bytearray()
@@ -808,7 +822,7 @@ class Transaction:
         data.append(spend_type)
         if ht.i == sighash_anyone_can_pay:
             data.extend(self.vin[i].out_point.txid)
-            data.extend(self.vin[i].out_point.vout.to_bytes(4, 'little'))
+            data.extend(self.vin[i].out_point.n.to_bytes(4, 'little'))
             utxo = self.vin[i].out_point.load()
             data.extend(utxo.value.to_bytes(8, 'little'))
             data.extend(pabtc.compact_size.encode(len(utxo.script_pubkey)))
@@ -857,7 +871,7 @@ class Transaction:
         data.extend(pabtc.compact_size.encode(len(self.vin)))
         for i in self.vin:
             data.extend(i.out_point.txid)
-            data.extend(i.out_point.vout.to_bytes(4, 'little'))
+            data.extend(i.out_point.n.to_bytes(4, 'little'))
             data.extend(pabtc.compact_size.encode(len(i.script_sig)))
             data.extend(i.script_sig)
             data.extend(i.sequence.to_bytes(4, 'little'))
@@ -877,7 +891,7 @@ class Transaction:
         data.extend(pabtc.compact_size.encode(len(self.vin)))
         for i in self.vin:
             data.extend(i.out_point.txid)
-            data.extend(i.out_point.vout.to_bytes(4, 'little'))
+            data.extend(i.out_point.n.to_bytes(4, 'little'))
             data.extend(pabtc.compact_size.encode(len(i.script_sig)))
             data.extend(i.script_sig)
             data.extend(i.sequence.to_bytes(4, 'little'))
