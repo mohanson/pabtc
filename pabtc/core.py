@@ -463,32 +463,40 @@ class Address:
         raise Exception('unreachable')
 
 
-def difficulty_target(bits: int) -> int:
-    assert bits >= 0x00
-    assert bits <= 0xffffffff
-    base = bits & 0xffffff
-    # Since targets are never negative in practice, however, this means the largest legal value for the lower 24 bits
-    # is 0x7fffff. Additionally, 0x008000 is the smallest legal value for the lower 24 bits since targets are always
-    # stored with the lowest possible exponent.
-    assert base >= 0x008000
-    assert base <= 0x7fffff
-    exps = bits >> 24
-    if exps <= 3:
-        return base >> (8 * (3 - exps))
-    else:
-        return base << (8 * (exps - 3))
+class Difficulty:
+    # Difficulty: See https://en.bitcoin.it/wiki/Difficulty.
 
+    @classmethod
+    def target(cls, bits: int) -> int:
+        assert bits >= 0x00
+        assert bits <= 0xffffffff
+        base = bits & 0xffffff
+        # Since targets are never negative in practice, however, this means the largest legal value for the lower 24 bits
+        # is 0x7fffff. Additionally, 0x008000 is the smallest legal value for the lower 24 bits since targets are always
+        # stored with the lowest possible exponent.
+        assert base >= 0x008000
+        assert base <= 0x7fffff
+        exps = bits >> 24
+        if exps <= 3:
+            return base >> (8 * (3 - exps))
+        else:
+            return base << (8 * (exps - 3))
 
-def difficulty(bits: int) -> float:
-    # The formula of difficulty is difficulty_1_target / current_target (target is a 256 bit number).
-    # See https://en.bitcoin.it/wiki/Difficulty.
-    # The highest possible target (difficulty 1) is defined as 0x1d00ffff.
-    return difficulty_target(0x1d00ffff) / difficulty_target(bits)
+    @classmethod
+    def b(cls, bits: int) -> float:
+        # Returns the bdiff. The formula of difficulty is difficulty_1_target / current_target (target is a 256 bit
+        # number). The highest possible target (difficulty 1) is defined as 0x1d00ffff.
+        return 0x00000000ffff0000000000000000000000000000000000000000000000000000 / cls.target(bits)
 
+    @classmethod
+    def p(cls, bits: int) -> float:
+        # Returns the pdiff.
+        return 0x00000000ffffffffffffffffffffffffffffffffffffffffffffffffffffffff / cls.target(bits)
 
-def difficulty_hash_rate(difficulty: float) -> float:
-    # Get network hash rate results in a given difficulty.
-    return difficulty * 2**32 / 600
+    @classmethod
+    def hash_rate(cls, bits: int) -> float:
+        # Get network hash rate results in a given difficulty. The result is in hashes per second.
+        return cls.p(bits) * 2**32 / 600
 
 
 class HashType:

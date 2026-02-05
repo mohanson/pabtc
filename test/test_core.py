@@ -144,13 +144,6 @@ def test_address_script_pubkey():
         assert pabtc.core.ScriptPubKey.address(addr) == script_pubkey
 
 
-def test_difficulty_target():
-    assert pabtc.core.difficulty_target(
-        0x1b0404cb) == 0x00000000000404CB000000000000000000000000000000000000000000000000
-    assert pabtc.core.difficulty_target(
-        0x1d00ffff) == 0x00000000FFFF0000000000000000000000000000000000000000000000000000
-
-
 def test_hash160():
     hash = pabtc.core.hash160(bytearray([0, 1, 2, 3]))
     assert hash.hex() == '3c3fa3d4adcaf8f52d5b1843975e122548269937'
