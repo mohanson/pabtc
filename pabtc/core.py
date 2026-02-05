@@ -517,6 +517,29 @@ class TapLeaf:
         self.hash = hashtag('TapLeaf', data)
 
 
+class TapScript:
+    # The custom locking scripts inside p2tr use a slightly modified version of script.
+
+    @classmethod
+    def p2pk(cls, pubkey: PubKey) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(bytearray(pubkey.x.to_bytes(32))))
+        data.append(pabtc.opcode.op_checksig)
+        return data
+
+    @classmethod
+    def p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+        data = bytearray()
+        data.extend(pabtc.opcode.op_pushdata(bytearray(pubkey[0].x.to_bytes(32))))
+        data.append(pabtc.opcode.op_checksig)
+        for e in pubkey[1:]:
+            data.extend(pabtc.opcode.op_pushdata(bytearray(e.x.to_bytes(32))))
+            data.append(pabtc.opcode.op_checksigadd)
+        data.append(pabtc.opcode.op_n(m))
+        data.append(pabtc.opcode.op_equal)
+        return data
+
+
 class HashType:
     def __init__(self, n: int) -> None:
         assert n in [
