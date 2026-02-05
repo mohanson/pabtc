@@ -21,14 +21,14 @@ if args.net == 'testnet':
 accept_script = pabtc.core.ScriptPubKey.address(args.to)
 accept_value = int(args.value * pabtc.denomination.bitcoin)
 prikey = int(args.prikey, 0)
-wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(prikey))
+wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(prikey))
 if args.script_type == 'p2pkh':
-    wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2pkh(prikey))
+    wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(prikey))
 if args.script_type == 'p2sh-p2wpkh':
-    wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2shp2wpkh(prikey))
+    wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2wpkh(prikey))
 if args.script_type == 'p2wpkh':
-    wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2wpkh(prikey))
+    wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2wpkh(prikey))
 if args.script_type == 'p2tr':
-    wallet = pabtc.wallet.Wallet(pabtc.wallet.Tp2tr(prikey, bytearray()))
+    wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2tr(prikey, bytearray()))
 txid = wallet.transfer(accept_script, accept_value)
 print(f'0x{txid.hex()}')
