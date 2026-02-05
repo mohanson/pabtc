@@ -902,7 +902,10 @@ class Transaction:
             data.extend(pabtc.compact_size.encode(len(o.script_pubkey)))
             data.extend(o.script_pubkey)
         for i in self.vin:
-            data.extend(witness_encode(i.witness))
+            data.extend(pabtc.compact_size.encode(len(i.witness)))
+            for e in i.witness:
+                data.extend(pabtc.compact_size.encode(len(e)))
+                data.extend(e)
         data.extend(self.locktime.to_bytes(4, 'little'))
         return data
 
@@ -951,7 +954,10 @@ class Transaction:
             script_pubkey = bytearray(reader.read(pabtc.compact_size.decode_reader(reader)))
             tx.vout.append(TxOut(value, script_pubkey))
         for i in range(len(tx.vin)):
-            tx.vin[i].witness = witness_decode_reader(reader)
+            wits = []
+            for _ in range(pabtc.compact_size.decode_reader(reader)):
+                wits.append(bytearray(reader.read(pabtc.compact_size.decode_reader(reader))))
+            tx.vin[i].witness = wits
         tx.locktime = int.from_bytes(reader.read(4), 'little')
         return tx
 
@@ -972,26 +978,6 @@ class Transaction:
         size_legacy = len(self.serialize_legacy())
         size_segwit = len(self.serialize_segwit()) - size_legacy
         return size_legacy * 4 + size_segwit
-
-
-def witness_encode(wits: typing.List[bytearray]) -> bytearray:
-    data = bytearray()
-    data.extend(pabtc.compact_size.encode(len(wits)))
-    for e in wits:
-        data.extend(pabtc.compact_size.encode(len(e)))
-        data.extend(e)
-    return data
-
-
-def witness_decode(data: bytearray) -> typing.List[bytearray]:
-    return witness_decode_reader(io.BytesIO(data))
-
-
-def witness_decode_reader(r: typing.BinaryIO) -> typing.List[bytearray]:
-    wits = []
-    for _ in range(pabtc.compact_size.decode_reader(r)):
-        wits.append(bytearray(r.read(pabtc.compact_size.decode_reader(r))))
-    return wits
 
 
 class Message:

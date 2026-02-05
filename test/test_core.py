@@ -225,9 +225,3 @@ def test_transaction():
     assert tx.locktime == 0
     assert tx.weight() == 569
     assert tx.txid() == bytearray.fromhex('7761f9d1ecbcf9c129802aaadfdfec38419aa441519d94bc5b21968630006246')
-
-
-def test_witness():
-    for _ in range(256):
-        wits = [bytearray(random.randbytes(random.randint(0, 256))) for _ in range(random.randint(0, 256))]
-        assert pabtc.core.witness_decode(pabtc.core.witness_encode(wits)) == wits
