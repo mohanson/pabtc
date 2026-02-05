@@ -199,6 +199,11 @@ class PubKey:
                 y = -y % pabtc.secp256k1.P
         return PubKey(x, y)
 
+    def tr(self, merkle: bytearray) -> bytearray:
+        # Get the taproot output key corresponding to the internal public key and the taproot tree merkle root.
+        assert len(merkle) == 32
+        return bytearray(pabtc.taproot.pubkey_tweak(self.pt(), merkle).x.n.to_bytes(32))
+
 
 class ScriptPubKey:
     # The Script pubkey is the locking code for an output. It's made up of script, which is a mini programming language

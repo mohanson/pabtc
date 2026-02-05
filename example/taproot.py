@@ -14,8 +14,7 @@ mast = pabtc.core.TapBranch(
 class Signerp2trp2pk(pabtc.wallet.Signer):
     def __init__(self, pubkey: pabtc.core.PubKey) -> None:
         self.pubkey = pubkey
-        p2tr_pubkey = bytearray(pabtc.taproot.pubkey_tweak(pubkey.pt(), mast.hash).x.n.to_bytes(32))
-        self.addr = pabtc.core.Address.p2tr(p2tr_pubkey)
+        self.addr = pabtc.core.Address.p2tr(pubkey.tr(mast.hash))
         self.script = pabtc.core.ScriptPubKey.address(self.addr)
         output_pubkey_byte = bytearray(
             [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
@@ -41,8 +40,7 @@ class Signerp2trp2pk(pabtc.wallet.Signer):
 class Signerp2trp2ms(pabtc.wallet.Signer):
     def __init__(self, pubkey: pabtc.core.PubKey) -> None:
         self.pubkey = pubkey
-        p2tr_pubkey = bytearray(pabtc.taproot.pubkey_tweak(pubkey.pt(), mast.hash).x.n.to_bytes(32))
-        self.addr = pabtc.core.Address.p2tr(p2tr_pubkey)
+        self.addr = pabtc.core.Address.p2tr(pubkey.tr(mast.hash))
         self.script = pabtc.core.ScriptPubKey.address(self.addr)
         output_pubkey_byte = bytearray(
             [0x02]) + pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, self.addr)
