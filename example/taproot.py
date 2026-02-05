@@ -5,7 +5,7 @@ import pabtc
 
 # Here created two scripts, one of which is a p2pk script, which requires that it can only be unlocked by private key 2,
 # and the other is an 2-of-2 multisig script.
-mast = pabtc.core.TapNode(
+mast = pabtc.core.TapBranch(
     pabtc.core.TapLeaf(bytearray([
         *pabtc.opcode.op_pushdata(pabtc.core.PriKey(2).pubkey().sec()[1:]),
         pabtc.opcode.op_checksig,

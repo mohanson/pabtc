@@ -499,6 +499,24 @@ class Difficulty:
         return cls.p(bits) * 2**32 / 600
 
 
+class TapBranch:
+    def __init__(self, l: TapBranch | TapLeaf, r: TapBranch | TapLeaf) -> None:
+        self.l = l
+        self.r = r
+        self.hash = hashtag('TapBranch', bytearray().join(sorted([l.hash, r.hash])))
+
+
+class TapLeaf:
+    def __init__(self, script: bytearray) -> None:
+        self.script = script
+        data = bytearray()
+        # Leaf version: currently, only 0xc0 is defined.
+        data.append(0xc0)
+        data.extend(pabtc.compact_size.encode(len(script)))
+        data.extend(script)
+        self.hash = hashtag('TapLeaf', data)
+
+
 class HashType:
     def __init__(self, n: int) -> None:
         assert n in [
@@ -970,23 +988,3 @@ class Message:
         r = pabtc.secp256k1.Fr(int.from_bytes(b[0x01:0x21]))
         s = pabtc.secp256k1.Fr(int.from_bytes(b[0x21:0x41]))
         return PubKey.pt_decode(pabtc.ecdsa.pubkey(m, r, s, v))
-
-
-class TapLeaf:
-    def __init__(self, script: bytearray) -> None:
-        data = bytearray()
-        data.append(0xc0)
-        data.extend(pabtc.compact_size.encode(len(script)))
-        data.extend(script)
-        self.hash = hashtag('TapLeaf', data)
-        self.script = script
-
-
-class TapNode:
-    def __init__(self, l: TapNode | TapLeaf, r: TapNode | TapLeaf) -> None:
-        if l.hash < r.hash:
-            self.hash = hashtag('TapBranch', l.hash + r.hash)
-        else:
-            self.hash = hashtag('TapBranch', r.hash + l.hash)
-        self.l = l
-        self.r = r
