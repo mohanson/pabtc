@@ -565,34 +565,34 @@ class HashType:
 class OutPoint:
     # A combination of a transaction hash and an index n into its vout.
 
-    def __init__(self, txid: bytearray, n: int) -> None:
+    def __init__(self, txid: bytearray, vout: int) -> None:
         assert len(txid) == 32
-        assert n >= 0
-        assert n <= 0xffffffff
+        assert vout >= 0
+        assert vout <= 0xffffffff
         self.txid = txid
-        self.n = n
+        self.vout = vout
 
     def __eq__(self, other) -> bool:
         return all([
             self.txid == other.txid,
-            self.n == other.n,
+            self.vout == other.vout,
         ])
 
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
     def copy(self) -> OutPoint:
-        return OutPoint(self.txid.copy(), self.n)
+        return OutPoint(self.txid.copy(), self.vout)
 
     def json(self) -> typing.Dict:
         return {
             'txid': self.txid.hex(),
-            'n': self.n,
+            'vout': self.vout,
         }
 
     def load(self) -> TxOut:
         # Load the tx out referenced by this out point via rpc.
-        rpcret = pabtc.rpc.get_tx_out(self.txid[::-1].hex(), self.n)
+        rpcret = pabtc.rpc.get_tx_out(self.txid[::-1].hex(), self.vout)
         script_pubkey = bytearray.fromhex(rpcret['scriptPubKey']['hex'])
         amount = rpcret['value'] * pabtc.denomination.bitcoin
         amount = int(amount.to_integral_exact())
@@ -642,7 +642,6 @@ class TxIn:
 
 class TxOut:
     # An output of a transaction. It contains the public key that the next input must be able to sign with to claim it.
-
     def __init__(self, value: int, script_pubkey: bytearray) -> None:
         assert value >= 0
         assert value <= 0xffffffffffffffff
@@ -730,7 +729,7 @@ class Transaction:
             snap = bytearray()
             for e in self.vin:
                 snap.extend(e.out_point.txid)
-                snap.extend(e.out_point.n.to_bytes(4, 'little'))
+                snap.extend(e.out_point.vout.to_bytes(4, 'little'))
             hash = hash256(snap)
         data.extend(hash)
         # Append hash sequence.
@@ -743,7 +742,7 @@ class Transaction:
         data.extend(hash)
         # Append outpoint.
         data.extend(self.vin[i].out_point.txid)
-        data.extend(self.vin[i].out_point.n.to_bytes(4, 'little'))
+        data.extend(self.vin[i].out_point.vout.to_bytes(4, 'little'))
         # Append script code of the input.
         data.extend(pabtc.compact_size.encode(len(script_code)))
         data.extend(script_code)
@@ -790,7 +789,7 @@ class Transaction:
             snap = bytearray()
             for e in self.vin:
                 snap.extend(e.out_point.txid)
-                snap.extend(e.out_point.n.to_bytes(4, 'little'))
+                snap.extend(e.out_point.vout.to_bytes(4, 'little'))
             data.extend(bytearray(hashlib.sha256(snap).digest()))
             # Append the SHA256 of the serialization of all input amounts.
             snap = bytearray()
@@ -823,7 +822,7 @@ class Transaction:
         data.append(spend_type)
         if ht.i == sighash_anyone_can_pay:
             data.extend(self.vin[i].out_point.txid)
-            data.extend(self.vin[i].out_point.n.to_bytes(4, 'little'))
+            data.extend(self.vin[i].out_point.vout.to_bytes(4, 'little'))
             utxo = self.vin[i].out_point.load()
             data.extend(utxo.value.to_bytes(8, 'little'))
             data.extend(pabtc.compact_size.encode(len(utxo.script_pubkey)))
@@ -872,7 +871,7 @@ class Transaction:
         data.extend(pabtc.compact_size.encode(len(self.vin)))
         for i in self.vin:
             data.extend(i.out_point.txid)
-            data.extend(i.out_point.n.to_bytes(4, 'little'))
+            data.extend(i.out_point.vout.to_bytes(4, 'little'))
             data.extend(pabtc.compact_size.encode(len(i.script_sig)))
             data.extend(i.script_sig)
             data.extend(i.sequence.to_bytes(4, 'little'))
@@ -892,7 +891,7 @@ class Transaction:
         data.extend(pabtc.compact_size.encode(len(self.vin)))
         for i in self.vin:
             data.extend(i.out_point.txid)
-            data.extend(i.out_point.n.to_bytes(4, 'little'))
+            data.extend(i.out_point.vout.to_bytes(4, 'little'))
             data.extend(pabtc.compact_size.encode(len(i.script_sig)))
             data.extend(i.script_sig)
             data.extend(i.sequence.to_bytes(4, 'little'))

@@ -1,9 +1,7 @@
 import json
 import pabtc.core
 import pabtc.denomination
-import pabtc.opcode
 import pabtc.rpc
-import pabtc.secp256k1
 import requests
 import typing
 
@@ -31,6 +29,8 @@ class Analyzer:
 
 
 class Utxo:
+    # Utxo stands for unspent transaction output. It represents an unspent output that can be used as an input in a new
+    # transaction.
     def __init__(self, out_point: pabtc.core.OutPoint, out: pabtc.core.TxOut) -> None:
         self.out_point = out_point
         self.out = out
@@ -76,7 +76,7 @@ class SearcherMempoolSpace:
         assert net in ['mainnet', 'testnet']
         self.net = net
 
-    def get_url(self, addr: str) -> str:
+    def request(self, addr: str) -> str:
         if self.net == 'mainnet':
             return f'https://mempool.space/api/address/{addr}/utxo'
         if self.net == 'testnet':
@@ -85,7 +85,7 @@ class SearcherMempoolSpace:
 
     def unspent(self, addr: str) -> typing.List[Utxo]:
         r = []
-        for e in requests.get(self.get_url(addr)).json():
+        for e in requests.get(self.request(addr)).json():
             out_point = pabtc.core.OutPoint(bytearray.fromhex(e['txid'])[::-1], e['vout'])
             # Mempool's api does not provide script_pubkey, so we have to infer it from the address.
             script_pubkey = pabtc.core.ScriptPubKey.address(addr)
