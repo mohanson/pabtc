@@ -699,8 +699,8 @@ class Transaction:
         tx = self.copy()
         for e in tx.vin:
             e.script_sig = bytearray()
-        # Put the script_pubkey as a placeholder in the script_sig.
-        # If the output is a P2SH output, then we need to use the redeem script.
+        # Put the script_pubkey as a placeholder in the script_sig. If the output is a p2sh output, then we need to use
+        # the redeem script.
         tx.vin[i].script_sig = script_code
         if ht.i == sighash_anyone_can_pay:
             tx.vin = [tx.vin[i]]
@@ -735,7 +735,7 @@ class Transaction:
         data.extend(hash)
         # Append hash sequence.
         hash = bytearray(32)
-        if ht.i != sighash_anyone_can_pay and ht.o == sighash_all:
+        if ht.i != sighash_anyone_can_pay and ht.o != sighash_single and ht.o != sighash_none:
             snap = bytearray()
             for e in self.vin:
                 snap.extend(e.sequence.to_bytes(4, 'little'))
@@ -745,6 +745,7 @@ class Transaction:
         data.extend(self.vin[i].out_point.txid)
         data.extend(self.vin[i].out_point.n.to_bytes(4, 'little'))
         # Append script code of the input.
+        data.extend(pabtc.compact_size.encode(len(script_code)))
         data.extend(script_code)
         # Append value of the output spent by this input.
         data.extend(self.vin[i].out_point.load().value.to_bytes(8, 'little'))

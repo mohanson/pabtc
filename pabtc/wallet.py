@@ -195,7 +195,7 @@ class Tp2shp2wpkh:
     def sign(self, tx: pabtc.core.Transaction) -> None:
         # See: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh-nested-in-bip16-p2sh
         pubkey_hash = pabtc.core.hash160(self.pubkey.sec())
-        script_code = pabtc.opcode.op_pushdata(pabtc.core.ScriptPubKey.p2pkh(pubkey_hash))
+        script_code = pabtc.core.ScriptPubKey.p2pkh(pubkey_hash)
         script_sig = pabtc.core.ScriptSig.p2sh_p2wpkh(self.pubkey.hash())
         for i, e in enumerate(tx.vin):
             e.script_sig = script_sig
@@ -229,7 +229,7 @@ class Tp2wpkh:
     def sign(self, tx: pabtc.core.Transaction) -> None:
         # See: https://github.com/bitcoin/bips/blob/master/bip-0141.mediawiki#p2wpkh
         pubkey_hash = pabtc.core.hash160(self.pubkey.sec())
-        script_code = pabtc.opcode.op_pushdata(pabtc.core.ScriptPubKey.p2pkh(pubkey_hash))
+        script_code = pabtc.core.ScriptPubKey.p2pkh(pubkey_hash)
         for i, e in enumerate(tx.vin):
             s = self.prikey.sign_ecdsa_der(tx.digest_segwit_v0(i, pabtc.core.sighash_all, script_code))
             s.append(pabtc.core.sighash_all)
