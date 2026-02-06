@@ -171,6 +171,7 @@ class Signerp2shp2ms(Signer):
             'prikey': [e.json() for e in self.prikey],
             'pubkey': [e.json() for e in self.pubkey],
             'redeem': self.redeem.hex(),
+            'redeem_hash': self.redeem_hash.hex(),
             'script': self.script.hex(),
             'addr': self.addr,
         }
@@ -238,6 +239,41 @@ class Signerp2wpkh(Signer):
             s = self.prikey.sign_ecdsa_der(m)
             s.append(pabtc.core.sighash_all)
             e.witness = [s, self.pubkey.sec()]
+
+
+class Signerp2wshp2ms(Signer):
+    def __init__(self, prikey: typing.List[pabtc.core.PriKey], pubkey: typing.List[pabtc.core.PubKey]) -> None:
+        self.prikey = prikey
+        self.pubkey = pubkey
+        self.redeem = pabtc.core.ScriptPubKey.p2ms(len(prikey), pubkey)
+        self.redeem_hash = pabtc.core.hashwsh(self.redeem)
+        self.script = pabtc.core.ScriptPubKey.p2wsh(self.redeem_hash)
+        self.addr = pabtc.core.Address.p2wsh(self.redeem_hash)
+
+    def __repr__(self) -> str:
+        return json.dumps(self.json())
+
+    def json(self) -> typing.Dict:
+        return {
+            'prikey': [e.json() for e in self.prikey],
+            'pubkey': [e.json() for e in self.pubkey],
+            'redeem': self.redeem.hex(),
+            'redeem_hash': self.redeem_hash.hex(),
+            'script': self.script.hex(),
+            'addr': self.addr,
+        }
+
+    def sign(self, tx: pabtc.core.Transaction) -> None:
+        for i, e in enumerate(tx.vin):
+            # The op_checkmultisig opcode has a bug where it pops one extra element off the stack than it needs to.
+            # This is why the witness includes an extra "dummy value" (00) before the signatures when using a p2ms as
+            # the Witness Script.
+            sig = [bytearray()]
+            for prikey in self.prikey:
+                s = prikey.sign_ecdsa_der(tx.digest_segwit_v0(i, pabtc.core.sighash_all, self.redeem))
+                s.append(pabtc.core.sighash_all)
+                sig.append(s)
+            e.witness = sig + [self.redeem]
 
 
 class Signerp2tr(Signer):
