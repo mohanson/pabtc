@@ -129,8 +129,8 @@ class Signer(abc.ABC):
 
 
 class Signerp2pkh(Signer):
-    def __init__(self, prikey: int) -> None:
-        self.prikey = pabtc.core.PriKey(prikey)
+    def __init__(self, prikey: pabtc.core.PriKey) -> None:
+        self.prikey = prikey
         self.pubkey = self.prikey.pubkey()
         self.script = pabtc.core.ScriptPubKey.p2pkh(self.pubkey.hash())
         self.addr = pabtc.core.Address.p2pkh(self.pubkey.hash())
@@ -155,8 +155,8 @@ class Signerp2pkh(Signer):
 
 
 class Signerp2shp2ms(Signer):
-    def __init__(self, pubkey: typing.List[pabtc.core.PubKey], prikey: typing.List[int]) -> None:
-        self.prikey = [pabtc.core.PriKey(e) for e in prikey]
+    def __init__(self, prikey: typing.List[pabtc.core.PriKey], pubkey: typing.List[pabtc.core.PubKey]) -> None:
+        self.prikey = prikey
         self.pubkey = pubkey
         self.redeem = pabtc.core.ScriptPubKey.p2ms(len(prikey), pubkey)
         self.redeem_hash = pabtc.core.hash160(self.redeem)
@@ -186,9 +186,9 @@ class Signerp2shp2ms(Signer):
 
 
 class Signerp2shp2wpkh(Signer):
-    def __init__(self, prikey: int) -> None:
-        self.prikey = pabtc.core.PriKey(prikey)
-        self.pubkey = self.prikey.pubkey()
+    def __init__(self, prikey: pabtc.core.PriKey) -> None:
+        self.prikey = prikey
+        self.pubkey = prikey.pubkey()
         self.script = pabtc.core.ScriptPubKey.p2sh_p2wpkh(self.pubkey.hash())
         self.addr = pabtc.core.Address.p2sh_p2wpkh(self.pubkey.hash())
 
@@ -214,9 +214,9 @@ class Signerp2shp2wpkh(Signer):
 
 
 class Signerp2wpkh(Signer):
-    def __init__(self, prikey: int) -> None:
-        self.prikey = pabtc.core.PriKey(prikey)
-        self.pubkey = self.prikey.pubkey()
+    def __init__(self, prikey: pabtc.core.PriKey) -> None:
+        self.prikey = prikey
+        self.pubkey = prikey.pubkey()
         self.script = pabtc.core.ScriptPubKey.p2wpkh(self.pubkey.hash())
         self.addr = pabtc.core.Address.p2wpkh(self.pubkey.hash())
 
@@ -241,9 +241,9 @@ class Signerp2wpkh(Signer):
 
 
 class Signerp2tr(Signer):
-    def __init__(self, prikey: int, merkle: bytearray) -> None:
-        self.prikey = pabtc.core.PriKey(prikey)
-        self.pubkey = self.prikey.pubkey()
+    def __init__(self, prikey: pabtc.core.PriKey, merkle: bytearray) -> None:
+        self.prikey = prikey
+        self.pubkey = prikey.pubkey()
         self.merkle = merkle
         self.prikey_tweak = pabtc.core.PriKey.fr_decode(pabtc.taproot.prikey_tweak(self.prikey.fr(), self.merkle))
         self.pubkey_tweak = pabtc.core.PubKey.pt_decode(pabtc.taproot.pubkey_tweak(self.pubkey.pt(), merkle))

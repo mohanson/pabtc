@@ -20,7 +20,7 @@ if args.net == 'testnet':
 
 accept_script = pabtc.core.ScriptPubKey.address(args.to)
 accept_value = int(args.value * pabtc.denomination.bitcoin)
-prikey = int(args.prikey, 0)
+prikey = pabtc.core.PriKey(int(args.prikey, 0))
 wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(prikey))
 if args.script_type == 'p2pkh':
     wallet = pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(prikey))

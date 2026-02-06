@@ -51,10 +51,10 @@ class Signerp2trp2ms(pabtc.wallet.Signer):
             ]
 
 
-mate = pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(1))
+mate = pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(pabtc.core.PriKey(1)))
 pabtc.rpc.generate_to_address(10, mate.addr)
 
-user_p2tr_signer = pabtc.wallet.Signerp2tr(1, mast.hash)
+user_p2tr_signer = pabtc.wallet.Signerp2tr(pabtc.core.PriKey(1), mast.hash)
 user_p2tr = pabtc.wallet.Wallet(user_p2tr_signer)
 pabtc.rpc.import_descriptors([{
     'desc': pabtc.rpc.get_descriptor_info(f'addr({user_p2tr.addr})')['descriptor'],

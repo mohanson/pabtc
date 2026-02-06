@@ -5,18 +5,24 @@ import pabtc
 def test_wallet_transfer():
     pabtc.config.current = pabtc.config.develop
     user_list = [
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(1)),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2ms([pabtc.core.PriKey(e).pubkey() for e in [1, 2]], [1, 2])),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2wpkh(1)),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2wpkh(1)),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2tr(1, bytearray())),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(pabtc.core.PriKey(1))),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2ms(
+            [pabtc.core.PriKey(e) for e in [1, 2]],
+            [pabtc.core.PriKey(e).pubkey() for e in [1, 2]]),
+        ),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2wpkh(pabtc.core.PriKey(1))),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2wpkh(pabtc.core.PriKey(1))),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2tr(pabtc.core.PriKey(1), bytearray())),
     ]
     mate_list = [
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(2)),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2ms([pabtc.core.PriKey(e).pubkey() for e in [2, 1]], [2, 1])),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2wpkh(2)),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2wpkh(2)),
-        pabtc.wallet.Wallet(pabtc.wallet.Signerp2tr(2, bytearray())),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2pkh(pabtc.core.PriKey(2))),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2ms(
+            [pabtc.core.PriKey(e) for e in [2, 1]],
+            [pabtc.core.PriKey(e).pubkey() for e in [2, 1]]),
+        ),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2shp2wpkh(pabtc.core.PriKey(2))),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2wpkh(pabtc.core.PriKey(2))),
+        pabtc.wallet.Wallet(pabtc.wallet.Signerp2tr(pabtc.core.PriKey(2), bytearray())),
     ]
     for user, mate in itertools.product(user_list, mate_list):
         value = pabtc.denomination.bitcoin
