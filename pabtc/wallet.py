@@ -1,5 +1,6 @@
 import abc
 import json
+import pabtc.config
 import pabtc.core
 import pabtc.denomination
 import pabtc.rpc
@@ -13,7 +14,7 @@ class Analyzer:
         self.tx = tx
 
     def analyze_mining_fee(self) -> None:
-        # Make sure the transaction fee is less than 50 satoshi per byte. An excessive fee, also called an absurd fee,
+        # Make sure the transaction fee is less than N satoshi per byte. An excessive fee, also called an absurd fee,
         # is any fee rate that's significantly higher than the amount that fee rate estimators currently expect is
         # necessary to get a transaction confirmed in the next block.
         sender_value = 0
@@ -23,7 +24,8 @@ class Analyzer:
             sender_value += o.value
         for e in self.tx.vout:
             output_value += e.value
-        assert sender_value - output_value <= self.tx.vbytes() * 50
+        assert sender_value - output_value >= self.tx.vbytes() * pabtc.config.current.wallet.fee_rate_min
+        assert sender_value - output_value <= self.tx.vbytes() * pabtc.config.current.wallet.fee_rate_max
 
     def analyze(self) -> None:
         self.analyze_mining_fee()
@@ -328,8 +330,9 @@ class Wallet:
         accept_script = script
         change_value = 0
         change_script = self.script
-        fr = pabtc.rpc.estimate_smart_fee(6)['feerate'] * pabtc.denomination.bitcoin
-        fr = int(fr.to_integral_exact()) // 1000
+        fr = pabtc.config.current.wallet.fee_rate
+        if fr == 0:
+            fr = int(pabtc.rpc.estimate_smart_fee(6)['feerate'] * pabtc.denomination.bitcoin / 1000)
         tx = pabtc.core.Transaction(2, [], [], 0)
         tx.vout.append(pabtc.core.TxOut(accept_value, accept_script))
         tx.vout.append(pabtc.core.TxOut(change_value, change_script))
@@ -353,8 +356,9 @@ class Wallet:
         sender_value = 0
         accept_value = 0
         accept_script = script
-        fr = pabtc.rpc.estimate_smart_fee(6)['feerate'] * pabtc.denomination.bitcoin
-        fr = int(fr.to_integral_exact()) // 1000
+        fr = pabtc.config.current.wallet.fee_rate
+        if fr == 0:
+            fr = int(pabtc.rpc.estimate_smart_fee(6)['feerate'] * pabtc.denomination.bitcoin / 1000)
         tx = pabtc.core.Transaction(2, [], [], 0)
         tx.vout.append(pabtc.core.TxOut(accept_value, accept_script))
         for utxo in self.unspent():

@@ -15,6 +15,14 @@ develop = pabtc.objectdict.ObjectDict({
         },
         'bech32': 'bcrt',
     },
+    'wallet': {
+        # Satoshi per vbyte. Zero means to use the node's fee estimation.
+        'fee_rate': 0,
+        # Make sure fee_rate <= fee_rate_max.
+        'fee_rate_max': 9,
+        # Make sure fee_rate >= fee_rate_min.
+        'fee_rate_min': 0,
+    }
 })
 
 mainnet = pabtc.objectdict.ObjectDict({
@@ -32,6 +40,11 @@ mainnet = pabtc.objectdict.ObjectDict({
         },
         'bech32': 'bc',
     },
+    'wallet': {
+        'fee_rate': 0,
+        'fee_rate_max': 9,
+        'fee_rate_min': 0,
+    }
 })
 
 testnet = pabtc.objectdict.ObjectDict({
@@ -49,6 +62,11 @@ testnet = pabtc.objectdict.ObjectDict({
         },
         'bech32': 'tb',
     },
+    'wallet': {
+        'fee_rate': 0,
+        'fee_rate_max': 9,
+        'fee_rate_min': 0,
+    }
 })
 
 current = develop
