@@ -59,6 +59,22 @@ $ python example/satoshi_nakamoto.py
 # Oh my god, you did it!
 ```
 
+**example/sss.py**
+
+Shamir's secret sharing. See <https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing>. This script can securely divide your private key into n pieces; only by collecting at least m pieces can the private key be recovered.
+
+```sh
+# Put the private key into the first argument, the format is always 0x0:prikey.
+$ python example/sss.py -m 2 -n 3 0x0:0x0000000000000000000000000000000000000000000000000000000000000001
+# 0x1:0xb703d4ef79f209dd9b3c1c7e9395785ab511ec95aaf56035ac18a901a477ab5a
+# 0x2:0x6e07a9def3e413bb367838fd272af0b56a23d92b55eac06b5831520448ef5a84
+# 0x3:0x250b7ece6dd61d98d1b4557bbac069101f35c5c100e020a10449fb06ed6709ae
+
+$ python example/sss.py -m 2 -n 3 0x1:0xb703d4ef79f209dd9b3c1c7e9395785ab511ec95aaf56035ac18a901a477ab5a \
+                                  0x2:0x6e07a9def3e413bb367838fd272af0b56a23d92b55eac06b5831520448ef5a84
+# 0x0:0x0000000000000000000000000000000000000000000000000000000000000001
+```
+
 **example/taproot.py**
 
 This example demonstrates how to create a P2TR script with two script spending paths: p2pk and p2ms(2-of-2 multisig).
