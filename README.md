@@ -14,7 +14,7 @@ Features:
 ```sh
 $ pip install pabtc
 # or
-$ git clone https://github.com/mohanson/pabtc
+$ git clone https://github.com/libraries/pabtc
 $ cd pabtc
 $ python -m pip install --editable .
 ```
