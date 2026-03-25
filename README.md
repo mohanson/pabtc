@@ -46,6 +46,14 @@ $ python example/message.py --prikey 1 --msg pybtc --sig ICvzXjwjJVMilSGyMqwlqMT
 # True
 ```
 
+**example/p2mr.py**
+
+P2MR (Pay to Merkle Root) is a new type of output script proposed in BIP-360 (2026). This example demonstrates how to create a P2MR script. Since P2MR is not yet supported in Bitcoin Core, you cannot use this script to create a real P2MR output. However, you can still use it to understand how P2MR works and create P2MR scripts.
+
+```sh
+$ python example/p2mr.py
+```
+
 **example/satoshi_nakamoto.py**
 
 Brute-forcing the private key of Satoshi Nakamoto's address.
@@ -77,7 +85,7 @@ $ python example/sss.py -m 2 -n 3 0x1:0xb703d4ef79f209dd9b3c1c7e9395785ab511ec95
 
 **example/taproot.py**
 
-This example demonstrates how to create a P2TR script with two script spending paths: p2pk and p2ms(2-of-2 multisig).
+This example demonstrates how to create a P2TR script with two script spending paths: P2PK and P2MS(2-of-2 multisig).
 
 ```sh
 $ python example/taproot.py
