@@ -298,6 +298,14 @@ class ScriptPubKey:
         return data
 
     @classmethod
+    def p2mr(cls, root: bytearray) -> bytearray:
+        assert len(root) == 32
+        data = bytearray()
+        data.append(pabtc.opcode.op_2)
+        data.extend(pabtc.opcode.op_pushdata(root))
+        return data
+
+    @classmethod
     def address(cls, address: str) -> bytearray:
         if address.startswith(pabtc.config.current.prefix.bech32):
             if address[len(pabtc.config.current.prefix.bech32) + 1] == 'q':
@@ -309,6 +317,9 @@ class ScriptPubKey:
             if address[len(pabtc.config.current.prefix.bech32) + 1] == 'p':
                 data = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 1, address)
                 return cls.p2tr(data)
+            if address[len(pabtc.config.current.prefix.bech32) + 1] == 'z':
+                data = pabtc.bech32.decode_segwit_addr(pabtc.config.current.prefix.bech32, 2, address)
+                return cls.p2mr(data)
         data = pabtc.base58.decode(address)
         if data[0] == pabtc.config.current.prefix.base58.p2pkh:
             assert pabtc.core.hash256(data[0x00:0x15])[:4] == data[0x15:0x19]
@@ -434,6 +445,11 @@ class Address:
         return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 1, root)
 
     @classmethod
+    def p2mr(cls, root: bytearray) -> str:
+        assert len(root) == 32
+        return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 2, root)
+
+    @classmethod
     def script_pubkey(cls, script_pubkey: bytearray) -> str:
         if len(script_pubkey) == 25 and all([
             script_pubkey[0x00] == pabtc.opcode.op_dup,
@@ -464,6 +480,11 @@ class Address:
             script_pubkey[0x01] == pabtc.opcode.op_data_32,
         ]):
             return cls.p2tr(script_pubkey[0x02:0x22])
+        if len(script_pubkey) == 34 and all([
+            script_pubkey[0x00] == pabtc.opcode.op_2,
+            script_pubkey[0x01] == pabtc.opcode.op_data_32,
+        ]):
+            return cls.p2mr(script_pubkey[0x02:0x22])
         raise Exception('unreachable')
 
 

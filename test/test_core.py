@@ -121,6 +121,15 @@ def test_address_p2tr():
     assert addr == 'tb1pmfr3p9j00pfxjh0zmgp99y8zftmd3s5pmedqhyptwy6lm87hf5ssk79hv2'
 
 
+def test_address_p2mr():
+    pabtc.config.current = pabtc.config.mainnet
+    root = bytearray.fromhex('c525714a7f49c28aedbbba78c005931a81c234b2f6c99a73e4d06082adc8bf2b')
+    script = pabtc.core.ScriptPubKey.p2mr(root)
+    assert script.hex() == '5220c525714a7f49c28aedbbba78c005931a81c234b2f6c99a73e4d06082adc8bf2b'
+    addr = pabtc.core.Address.p2mr(root)
+    assert addr == 'bc1zc5jhzjnlf8pg4mdmhfuvqpvnr2quyd9j7mye5uly6psg9twghu4ssr0v9k'
+
+
 def test_address_script_pubkey():
     pabtc.config.current = pabtc.config.mainnet
     for script_pubkey, addr in zip([bytearray.fromhex(e) for e in [
