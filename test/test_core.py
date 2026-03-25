@@ -122,12 +122,34 @@ def test_address_p2tr():
 
 
 def test_address_p2mr():
+    # From https://github.com/bitcoin/bips/blob/master/bip-0360/ref-impl/common/tests/data/p2mr_construction.json
     pabtc.config.current = pabtc.config.mainnet
-    root = bytearray.fromhex('c525714a7f49c28aedbbba78c005931a81c234b2f6c99a73e4d06082adc8bf2b')
-    script = pabtc.core.ScriptPubKey.p2mr(root)
-    assert script.hex() == '5220c525714a7f49c28aedbbba78c005931a81c234b2f6c99a73e4d06082adc8bf2b'
-    addr = pabtc.core.Address.p2mr(root)
-    assert addr == 'bc1zc5jhzjnlf8pg4mdmhfuvqpvnr2quyd9j7mye5uly6psg9twghu4ssr0v9k'
+
+    # Case: p2mr_single_leaf_script_tree
+    leaf_script = bytearray.fromhex('20b617298552a72ade070667e86ca63b8f5789a9fe8731ef91202a91c9f3459007ac')
+    leaf = pabtc.core.TapLeaf(leaf_script)
+    root = leaf.hash
+    assert pabtc.core.Address.p2mr(root) == 'bc1zc5jhzjnlf8pg4mdmhfuvqpvnr2quyd9j7mye5uly6psg9twghu4ssr0v9k'
+
+    # Case: p2mr_two_leaf_same_version
+    lea0 = pabtc.core.TapLeaf(bytearray.fromhex('2044b178d64c32c4a05cc4f4d1407268f764c940d20ce97abfd44db5c3592b72fdac'))
+    lea1 = pabtc.core.TapLeaf(bytearray.fromhex('07546170726f6f74'))
+    root = pabtc.core.TapBranch(lea0, lea1).hash
+    assert pabtc.core.Address.p2mr(root) == 'bc1z4vtegvwz35ak37me39tl4a2f045u3q7xlv0pek0czjpas7avjrxqz20g2y'
+
+    # Case: p2mr_three_leaf_complex
+    lea0 = pabtc.core.TapLeaf(bytearray.fromhex('2072ea6adcf1d371dea8fba1035a09f3d24ed5a059799bae114084130ee5898e69ac'))
+    lea1 = pabtc.core.TapLeaf(bytearray.fromhex('202352d137f2f3ab38d1eaa976758873377fa5ebb817372c71e2c542313d4abda8ac'))
+    lea2 = pabtc.core.TapLeaf(bytearray.fromhex('207337c0dd4253cb86f2c43a2351aadd82cccb12a172cd120452b9bb8324f2186aac'))
+    root = pabtc.core.TapBranch(lea0, pabtc.core.TapBranch(lea1, lea2)).hash
+    assert pabtc.core.Address.p2mr(root) == 'bc1zej7kd3hhar76k3an5jr0t8fgyc47s4lnp4rh8uk4afrlwasuur3qzgewqq'
+
+    # Case: p2mr_three_leaf_alternative
+    lea0 = pabtc.core.TapLeaf(bytearray.fromhex('2071981521ad9fc9036687364118fb6ccd2035b96a423c59c5430e98310a11abe2ac'))
+    lea1 = pabtc.core.TapLeaf(bytearray.fromhex('20d5094d2dbe9b76e2c245a2b89b6006888952e2faa6a149ae318d69e520617748ac'))
+    lea2 = pabtc.core.TapLeaf(bytearray.fromhex('20c440b462ad48c7a77f94cd4532d8f2119dcebbd7c9764557e62726419b08ad4cac'))
+    root = pabtc.core.TapBranch(lea0, pabtc.core.TapBranch(lea1, lea2)).hash
+    assert pabtc.core.Address.p2mr(root) == 'bc1z9a4jc5uhkmtgegvwpx3lq5tpv68layaf3pvz64wx7paatvejnhhsv52lcv'
 
 
 def test_address_script_pubkey():
