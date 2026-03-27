@@ -10,7 +10,7 @@ import typing
 # Doc: https://developer.bitcoin.org/reference/rpc/
 
 
-def call(method: str, params: typing.List[typing.Any]) -> typing.Any:
+def call(method: str, params: list) -> typing.Any:
     if not hasattr(call, 'rate'):
         setattr(call, 'rate', pabtc.rate.Limits(pabtc.config.current.rpc.qps, 1))
     getattr(call, 'rate').wait(1)
@@ -45,11 +45,11 @@ def get_best_block_hash() -> str:
     return call('getbestblockhash', [])
 
 
-def get_block(blockhash: str, verbosity: int = 1) -> typing.Dict:
+def get_block(blockhash: str, verbosity: int = 1) -> dict:
     return call('getblock', [blockhash, verbosity])
 
 
-def get_block_chain_info() -> typing.Dict:
+def get_block_chain_info() -> dict:
     return call('getblockchaininfo', [])
 
 
@@ -57,7 +57,7 @@ def get_block_count() -> int:
     return call('getblockcount', [])
 
 
-def get_block_filter(blockhash: str) -> typing.Dict:
+def get_block_filter(blockhash: str) -> dict:
     return call('getblockfilter', [blockhash])
 
 
@@ -65,19 +65,19 @@ def get_block_hash(height: int) -> str:
     return call('getblockhash', [height])
 
 
-def get_block_header(blockhash: str) -> typing.Dict:
+def get_block_header(blockhash: str) -> dict:
     return call('getblockheader', [blockhash])
 
 
-def get_block_stats(hash_or_height: typing.Union[str, int]) -> typing.Dict:
+def get_block_stats(hash_or_height: str | int) -> dict:
     return call('getblockstats', [hash_or_height])
 
 
-def get_chain_tips() -> typing.List[typing.Dict]:
+def get_chain_tips() -> list[dict]:
     return call('getchaintips', [])
 
 
-def get_chain_tx_stats(nblocks: typing.Optional[int] = None, blockhash: typing.Optional[str] = None) -> typing.Dict:
+def get_chain_tx_stats(nblocks: int | None = None, blockhash: str | None = None) -> dict:
     return call('getchaintxstats', [nblocks, blockhash])
 
 
@@ -85,35 +85,35 @@ def get_difficulty() -> decimal.Decimal:
     return call('getdifficulty', [])
 
 
-def get_mempool_ancestors(txid: str) -> typing.List[str]:
+def get_mempool_ancestors(txid: str) -> list[str]:
     return call('getmempoolancestors', [txid])
 
 
-def get_mempool_descendants(txid: str) -> typing.List[str]:
+def get_mempool_descendants(txid: str) -> list[str]:
     return call('getmempooldescendants', [txid])
 
 
-def get_mempool_entry(txid: str) -> typing.Dict:
+def get_mempool_entry(txid: str) -> dict:
     return call('getmempoolentry', [txid])
 
 
-def get_mempool_info() -> typing.Dict:
+def get_mempool_info() -> dict:
     return call('getmempoolinfo', [])
 
 
-def get_raw_mempool() -> typing.List[str]:
+def get_raw_mempool() -> list[str]:
     return call('getrawmempool', [])
 
 
-def get_tx_out(txid: str, vout: int) -> typing.Dict:
+def get_tx_out(txid: str, vout: int) -> dict:
     return call('gettxout', [txid, vout])
 
 
-def get_tx_out_proof(txids: typing.List[str], blockhash: typing.Optional[str] = None) -> str:
+def get_tx_out_proof(txids: list[str], blockhash: str | None = None) -> str:
     return call('gettxoutproof', [txids, blockhash])
 
 
-def get_tx_out_set_info(hash_type: typing.Optional[str] = None) -> typing.Dict:
+def get_tx_out_set_info(hash_type: str | None = None) -> dict:
     return call('gettxoutsetinfo', [hash_type])
 
 
@@ -129,15 +129,15 @@ def save_mempool() -> None:
     return call('savemempool', [])
 
 
-def scan_tx_out_set(action: str, scanobjects: typing.List[str]) -> typing.Dict:
+def scan_tx_out_set(action: str, scanobjects: list[str]) -> dict:
     return call('scan_tx_out_set', [action, scanobjects])
 
 
-def verify_chain(checklevel: typing.Optional[int] = None, nblocks: typing.Optional[int] = None) -> bool:
+def verify_chain(checklevel: int | None = None, nblocks: int | None = None) -> bool:
     return call('verifychain', [checklevel, nblocks])
 
 
-def verify_tx_out_proof(proof: str) -> typing.List[str]:
+def verify_tx_out_proof(proof: str) -> list[str]:
     return call('verifytxoutproof', [proof])
 
 # =============================================================================
@@ -145,11 +145,11 @@ def verify_tx_out_proof(proof: str) -> typing.List[str]:
 # =============================================================================
 
 
-def get_memory_info(mode: typing.Optional[str] = None) -> typing.Union[str, typing.Dict]:
+def get_memory_info(mode: str | None = None) -> str | dict:
     return call('getmemoryinfo', [mode])
 
 
-def get_rpc_info() -> typing.Dict:
+def get_rpc_info() -> dict:
     return call('getrpcinfo', [])
 
 
@@ -157,7 +157,7 @@ def help() -> str:
     return call('help', [])
 
 
-def logging(include: typing.List[str], exclude: typing.List[str]) -> typing.Dict:
+def logging(include: list[str], exclude: list[str]) -> dict:
     return call('logging', [include, exclude])
 
 
@@ -173,15 +173,15 @@ def uptime() -> int:
 # =============================================================================
 
 
-def generate_block(output: str, transactions: typing.List[str]) -> typing.Dict:
+def generate_block(output: str, transactions: list[str]) -> dict:
     return call('generateblock', [output, transactions])
 
 
-def generate_to_address(nblocks: int, address: str) -> typing.List[str]:
+def generate_to_address(nblocks: int, address: str) -> list[str]:
     return call('generatetoaddress', [nblocks, address])
 
 
-def generate_to_descriptor(nblocks: int, descriptor: str) -> typing.List[str]:
+def generate_to_descriptor(nblocks: int, descriptor: str) -> list[str]:
     return call('generatetodescriptor', [nblocks, descriptor])
 
 # =============================================================================
@@ -189,15 +189,15 @@ def generate_to_descriptor(nblocks: int, descriptor: str) -> typing.List[str]:
 # =============================================================================
 
 
-def get_block_template(template_request: typing.Dict) -> typing.Dict:
+def get_block_template(template_request: dict) -> dict:
     return call('getblocktemplate', [template_request])
 
 
-def get_mining_info() -> typing.Dict:
+def get_mining_info() -> dict:
     return call('getmininginfo', [])
 
 
-def get_network_hashps(nblocks: typing.Optional[int] = None, height: typing.Optional[int] = None) -> decimal.Decimal:
+def get_network_hashps(nblocks: int | None = None, height: int | None = None) -> decimal.Decimal:
     return call('getnetworkhashps', [nblocks, height])
 
 
@@ -225,11 +225,11 @@ def clear_banned() -> None:
     return call('clearbanned', [])
 
 
-def disconnect_node(address: typing.Optional[str] = None, nodeid: typing.Optional[int] = None) -> None:
+def disconnect_node(address: str | None = None, nodeid: int | None = None) -> None:
     return call('disconnectnode', [address, nodeid])
 
 
-def get_added_node_info(node: typing.Optional[str] = None) -> typing.List[typing.Dict]:
+def get_added_node_info(node: str | None = None) -> list[dict]:
     return call('getaddednodeinfo', [node])
 
 
@@ -237,23 +237,23 @@ def get_connection_count() -> int:
     return call('getconnectioncount', [])
 
 
-def get_net_totals() -> typing.Dict:
+def get_net_totals() -> dict:
     return call('getnettotals', [])
 
 
-def get_network_info() -> typing.Dict:
+def get_network_info() -> dict:
     return call('getnetworkinfo', [])
 
 
-def get_node_addresses() -> typing.List[typing.Dict]:
+def get_node_addresses() -> list[dict]:
     return call('getnodeaddresses', [])
 
 
-def get_peer_info() -> typing.List[typing.Dict]:
+def get_peer_info() -> list[dict]:
     return call('getpeerinfo', [])
 
 
-def list_banned() -> typing.List[typing.Dict]:
+def list_banned() -> list[dict]:
     return call('listbanned', [])
 
 
@@ -273,15 +273,15 @@ def set_network_active(state: bool) -> bool:
 # =============================================================================
 
 
-def analyze_psbt(psbt: str) -> typing.Dict:
+def analyze_psbt(psbt: str) -> dict:
     return call('analyzepsbt', [psbt])
 
 
-def combine_psbt(txs: typing.List[str]) -> str:
+def combine_psbt(txs: list[str]) -> str:
     return call('combinepsbt', [txs])
 
 
-def combine_raw_transaction(txs: typing.List[str]) -> str:
+def combine_raw_transaction(txs: list[str]) -> str:
     return call('combinerawtransaction', [txs])
 
 
@@ -290,8 +290,8 @@ def convert_to_psbt(hexstring: str, permitsigdata: bool = False) -> str:
 
 
 def create_psbt(
-    inputs: typing.List[typing.Dict],
-    outputs: typing.List[typing.Dict],
+    inputs: list[dict],
+    outputs: list[dict],
     locktime: int = 0,
     replaceable: bool = False,
 ) -> str:
@@ -299,39 +299,39 @@ def create_psbt(
 
 
 def create_raw_transaction(
-    inputs: typing.List[typing.Dict],
-    outputs: typing.List[typing.Dict],
+    inputs: list[dict],
+    outputs: list[dict],
     locktime: int = 0,
     replaceable: bool = False,
 ) -> str:
     return call('createrawtransaction', [inputs, outputs, locktime, replaceable])
 
 
-def decode_psbt(psbt: str) -> typing.Dict:
+def decode_psbt(psbt: str) -> dict:
     return call('decodepsbt', [psbt])
 
 
-def decode_raw_transaction(tx: str) -> typing.Dict:
+def decode_raw_transaction(tx: str) -> dict:
     return call('decoderawtransaction', [tx])
 
 
-def decode_script(hexstring: str) -> typing.Dict:
+def decode_script(hexstring: str) -> dict:
     return call('decodescript', [hexstring])
 
 
-def finalize_psbt(psbt: str, extract: bool = True) -> typing.Dict:
+def finalize_psbt(psbt: str, extract: bool = True) -> dict:
     return call('finalizepsbt', [psbt, extract])
 
 
-def fund_raw_transaction(hexstring: str, options: typing.Optional[typing.Dict] = None) -> typing.Dict:
+def fund_raw_transaction(hexstring: str, options: dict | None = None) -> dict:
     return call('fundrawtransaction', [hexstring, options])
 
 
-def get_raw_transaction(txid: str) -> typing.Dict:
+def get_raw_transaction(txid: str) -> dict:
     return call('getrawtransaction', [txid, True])
 
 
-def join_psbts(txs: typing.List[str]) -> str:
+def join_psbts(txs: list[str]) -> str:
     return call('joinpsbts', [txs])
 
 
@@ -341,18 +341,18 @@ def send_raw_transaction(tx: str) -> str:
 
 def sign_raw_transaction_with_key(
     hexstring: str,
-    privkeys: typing.List[str],
-    prevtxs: typing.Optional[typing.List[typing.Dict]] = None,
+    privkeys: list[str],
+    prevtxs: list[dict] = [],
     sighashtype: str = 'ALL',
-) -> typing.Dict:
+) -> dict:
     return call('signrawtransactionwithkey', [hexstring, privkeys, prevtxs, sighashtype])
 
 
-def test_mempool_accept(rawtxs: typing.List[str]) -> typing.List[typing.Dict]:
+def test_mempool_accept(rawtxs: list[str]) -> list[dict]:
     return call('testmempoolaccept', [rawtxs])
 
 
-def utxo_update_psbt(psbt: str, descriptors: typing.Optional[typing.List[typing.Dict]] = None) -> str:
+def utxo_update_psbt(psbt: str, descriptors: list[dict] = []) -> str:
     return call('utxoupdatepsbt', [psbt, descriptors])
 
 # =============================================================================
@@ -360,15 +360,15 @@ def utxo_update_psbt(psbt: str, descriptors: typing.Optional[typing.List[typing.
 # =============================================================================
 
 
-def create_multisig(nrequired: int, keys: typing.List[str], address_type: str) -> typing.Dict:
+def create_multisig(nrequired: int, keys: list[str], address_type: str) -> dict:
     return call('createmultisig', [nrequired, keys, address_type])
 
 
-def derive_addresses(descriptor: str, range: typing.Union[int, typing.List[int]]) -> typing.List[str]:
+def derive_addresses(descriptor: str, range: int | list[int]) -> list[str]:
     return call('deriveaddresses', [descriptor, range])
 
 
-def estimate_smart_fee(conf_target: int) -> typing.Dict:
+def estimate_smart_fee(conf_target: int) -> dict:
     # A mock is required on RegTest to allow this RPC to return meaningful data.
     # See: https://github.com/bitcoin/bitcoin/issues/11500
     if pabtc.config.current == pabtc.config.develop:
@@ -376,11 +376,11 @@ def estimate_smart_fee(conf_target: int) -> typing.Dict:
     return call('estimatesmartfee', [conf_target, 'ECONOMICAL'])
 
 
-def get_descriptor_info(descriptor: str) -> typing.Dict:
+def get_descriptor_info(descriptor: str) -> dict:
     return call('getdescriptorinfo', [descriptor])
 
 
-def get_index_info(index_name: typing.Optional[str] = None) -> typing.Dict:
+def get_index_info(index_name: str | None = None) -> dict:
     return call('getindexinfo', [index_name])
 
 
@@ -388,7 +388,7 @@ def sign_message_with_privkey(prikey: str, message: str) -> str:
     return call('signmessagewithprivkey', [prikey, message])
 
 
-def validate_address(address: str) -> typing.Dict:
+def validate_address(address: str) -> dict:
     return call('validateaddress', [address])
 
 
@@ -408,7 +408,7 @@ def abort_rescan() -> bool:
     return call('abortrescan', [])
 
 
-def add_multisig_address(nrequired: int, keys: typing.List[str], label: str, address_type: str) -> typing.Dict:
+def add_multisig_address(nrequired: int, keys: list[str], label: str, address_type: str) -> dict:
     return call('addmultisigaddress', [nrequired, keys, label, address_type])
 
 
@@ -416,7 +416,7 @@ def backup_wallet(destination: str) -> None:
     return call('backupwallet', [destination])
 
 
-def bump_fee(txid: str, options: typing.Dict) -> typing.Dict:
+def bump_fee(txid: str, options: dict) -> dict:
     return call('bumpfee', [txid, options])
 
 
@@ -427,9 +427,9 @@ def create_wallet(
     passphrase: str = '',
     avoid_reuse: bool = False,
     descriptors: bool = True,
-    load_on_startup: typing.Optional[bool] = None,
+    load_on_startup: bool | None = None,
     external_signer: bool = False,
-) -> typing.Dict:
+) -> dict:
     return call('createwallet', [
         wallet_name,
         disable_private_keys,
@@ -446,7 +446,7 @@ def dump_privkey(address: str) -> str:
     return call('dumpprivkey', [address])
 
 
-def dump_wallet(filename: str) -> typing.Dict:
+def dump_wallet(filename: str) -> dict:
     return call('dumpwallet', [filename])
 
 
@@ -454,11 +454,11 @@ def encrypt_wallet(passphrase: str) -> str:
     return call('encryptwallet', [passphrase])
 
 
-def get_addresses_by_label(label: str) -> typing.Dict:
+def get_addresses_by_label(label: str) -> dict:
     return call('getaddressesbylabel', [label])
 
 
-def get_address_info(address: str) -> typing.Dict:
+def get_address_info(address: str) -> dict:
     return call('getaddressinfo', [address])
 
 
@@ -466,7 +466,7 @@ def get_balance(minconf: int = 0, include_watchonly: bool = False) -> decimal.De
     return call('getbalance', ['*', minconf, include_watchonly])
 
 
-def get_balances() -> typing.Dict:
+def get_balances() -> dict:
     return call('getbalances', [])
 
 
@@ -486,7 +486,7 @@ def get_received_by_label(label: str, minconf: int = 1) -> decimal.Decimal:
     return call('getreceivedbylabel', [label, minconf])
 
 
-def get_transaction(txid: str, include_watchonly: bool = False, verbose: bool = False) -> typing.Dict:
+def get_transaction(txid: str, include_watchonly: bool = False, verbose: bool = False) -> dict:
     return call('gettransaction', [txid, include_watchonly, verbose])
 
 
@@ -494,7 +494,7 @@ def get_unconfirmed_balance() -> decimal.Decimal:
     return call('getunconfirmedbalance', [])
 
 
-def get_wallet_info() -> typing.Dict:
+def get_wallet_info() -> dict:
     return call('getwalletinfo', [])
 
 
@@ -502,11 +502,11 @@ def import_address(address: str, label: str, rescan: bool = True, p2sh: bool = F
     return call('importaddress', [address, label, rescan, p2sh])
 
 
-def import_descriptors(requests: typing.List[typing.Dict]) -> typing.List[typing.Dict]:
+def import_descriptors(requests: list[dict]) -> list[dict]:
     return call('importdescriptors', [requests])
 
 
-def import_multi(requests: typing.List[typing.Dict], options: typing.Dict) -> typing.List[typing.Dict]:
+def import_multi(requests: list[dict], options: dict) -> list[dict]:
     return call('importmulti', [requests, options])
 
 
@@ -526,19 +526,19 @@ def import_wallet(filename: str) -> None:
     return call('importwallet', [filename])
 
 
-def keypool_refill(newsize: typing.Optional[int] = None) -> None:
+def keypool_refill(newsize: int | None = None) -> None:
     return call('keypoolrefill', [newsize])
 
 
-def list_address_groupings() -> typing.List[typing.List[typing.List[typing.Union[str, decimal.Decimal]]]]:
+def list_address_groupings() -> list[list[list[str | decimal.Decimal]]]:
     return call('listaddressgroupings', [])
 
 
-def list_labels(purpose: typing.Optional[str] = None) -> typing.List[str]:
+def list_labels(purpose: str | None = None) -> list[str]:
     return call('listlabels', [purpose])
 
 
-def list_lock_unspent() -> typing.List[typing.Dict]:
+def list_lock_unspent() -> list[dict]:
     return call('listlockunspent', [])
 
 
@@ -546,8 +546,8 @@ def list_received_by_address(
     minconf: int = 1,
     include_empty: bool = False,
     include_watchonly: bool = False,
-    address_filter: typing.Optional[str] = None,
-) -> typing.List[typing.Dict]:
+    address_filter: str | None = None,
+) -> list[dict]:
     return call('listreceivedbyaddress', [minconf, include_empty, include_watchonly, address_filter])
 
 
@@ -555,16 +555,16 @@ def list_received_by_label(
     minconf: int = 1,
     include_empty: bool = False,
     include_watchonly: bool = False,
-) -> typing.List[typing.Dict]:
+) -> list[dict]:
     return call('listreceivedbylabel', [minconf, include_empty, include_watchonly])
 
 
 def list_since_block(
-    blockhash: typing.Optional[str] = None,
+    blockhash: str | None = None,
     target_confirmations: int = 1,
     include_watchonly: bool = False,
     include_removed: bool = True,
-) -> typing.Dict:
+) -> dict:
     return call('listsinceblock', [blockhash, target_confirmations, include_watchonly, include_removed])
 
 
@@ -573,31 +573,31 @@ def list_transactions(
     count: int = 10,
     skip: int = 0,
     include_watchonly: bool = False,
-) -> typing.List[typing.Dict]:
+) -> list[dict]:
     return call('listtransactions', [label, count, skip, include_watchonly])
 
 
-def list_unspent(addresses: typing.List[str]) -> typing.List:
+def list_unspent(addresses: list[str]) -> list:
     return call('listunspent', [0, 9999999, addresses])
 
 
-def list_wallet_dir() -> typing.Dict:
+def list_wallet_dir() -> dict:
     return call('listwalletdir', [])
 
 
-def list_wallets() -> typing.List[str]:
+def list_wallets() -> list[str]:
     return call('listwallets', [])
 
 
-def load_wallet(filename: str, load_on_startup: typing.Optional[bool] = None) -> typing.Dict:
+def load_wallet(filename: str, load_on_startup: bool | None = None) -> dict:
     return call('loadwallet', params=[filename, load_on_startup])
 
 
-def lock_unspent(unlock: bool, transactions: typing.Optional[typing.List[typing.Dict]] = None) -> bool:
+def lock_unspent(unlock: bool, transactions: list[dict]) -> bool:
     return call('lockunspent', params=[unlock, transactions])
 
 
-def psbt_bump_fee(txid: str, options: typing.Optional[typing.Dict] = None) -> typing.Dict:
+def psbt_bump_fee(txid: str, options: dict | None = None) -> dict:
     return call('psbtbumpfee', [txid, options])
 
 
@@ -605,29 +605,29 @@ def remove_pruned_funds(txid: str) -> None:
     return call('removeprunedfunds', [txid])
 
 
-def rescan_blockchain(start_height: int = 0, stop_height: typing.Optional[int] = None) -> typing.Dict:
+def rescan_blockchain(start_height: int = 0, stop_height: int | None = None) -> dict:
     return call('rescanblockchain', [start_height, stop_height])
 
 
 def send(
-    outputs: typing.Dict,
-    conf_target: typing.Optional[int] = None,
+    outputs: dict,
+    conf_target: int | None = None,
     estimate_mode: str = 'UNSET',
-    fee_rate: typing.Optional[decimal.Decimal] = None,
-    options: typing.Optional[typing.Dict] = None,
-) -> typing.Dict:
+    fee_rate: decimal.Decimal | None = None,
+    options: dict | None = None,
+) -> dict:
     return call('send', [outputs, conf_target, estimate_mode, fee_rate, options])
 
 
 def send_many(
-    amounts: typing.Dict,
+    amounts: dict,
     minconf: int = 1,
     comment: str = '',
-    subtractfeefrom: typing.Optional[typing.List[str]] = None,
+    subtractfeefrom: list[str] = [],
     replaceable: bool = False,
-    conf_target: typing.Optional[int] = None,
+    conf_target: int | None = None,
     estimate_mode: str = 'UNSET',
-    fee_rate: typing.Optional[decimal.Decimal] = None,
+    fee_rate: decimal.Decimal | None = None,
 ) -> str:
     return call('sendmany', [
         '',
@@ -649,10 +649,10 @@ def send_to_address(
     comment_to: str = '',
     subtractfeefromamount: bool = False,
     replaceable: bool = False,
-    conf_target: typing.Optional[int] = None,
+    conf_target: int | None = None,
     estimate_mode: str = 'UNSET',
     avoid_reuse: bool = True,
-    fee_rate: typing.Optional[decimal.Decimal] = None,
+    fee_rate: decimal.Decimal | None = None,
 ) -> str:
     return call('sendtoaddress', [
         address,
@@ -668,7 +668,7 @@ def send_to_address(
     ])
 
 
-def set_hd_seed(newkeypool: bool = True, seed: typing.Optional[str] = None) -> None:
+def set_hd_seed(newkeypool: bool = True, seed: str | None = None) -> None:
     return call('sethdseed', [newkeypool, seed])
 
 
@@ -680,7 +680,7 @@ def set_tx_fee(amount: decimal.Decimal) -> bool:
     return call('settxfee', [amount])
 
 
-def set_wallet_flag(flag: str, value: bool = True) -> typing.Dict:
+def set_wallet_flag(flag: str, value: bool = True) -> dict:
     return call('setwalletflag', [flag, value])
 
 
@@ -690,30 +690,30 @@ def sign_message(address: str, message: str) -> str:
 
 def sign_raw_transaction_with_wallet(
     hexstring: str,
-    prevtxs: typing.Optional[typing.List[typing.Dict]] = None,
+    prevtxs: list[dict] = [],
     sighashtype: str = 'ALL',
-) -> typing.Dict:
+) -> dict:
     return call('signrawtransactionwithwallet', [hexstring, prevtxs, sighashtype])
 
 
 def unload_wallet(
-    wallet_name: typing.Optional[str] = None,
-    load_on_startup: typing.Optional[bool] = None,
-) -> typing.Dict:
+    wallet_name: str | None = None,
+    load_on_startup: bool | None = None,
+) -> dict:
     return call('unloadwallet', [wallet_name, load_on_startup])
 
 
-def upgrade_wallet(version: typing.Optional[int] = None) -> typing.Dict:
+def upgrade_wallet(version: int | None = None) -> dict:
     return call('upgradewallet', [version])
 
 
 def wallet_create_funded_psbt(
-    inputs: typing.List[typing.Dict],
-    outputs: typing.List[typing.Dict],
+    inputs: list[dict],
+    outputs: list[dict],
     locktime: int = 0,
-    options: typing.Optional[typing.Dict] = None,
+    options: dict | None = None,
     bip32derivs: bool = True,
-) -> typing.Dict:
+) -> dict:
     return call('walletcreatefundedpsbt', [inputs, outputs, locktime, options, bip32derivs])
 
 
@@ -734,5 +734,5 @@ def wallet_process_psbt(
     sign: bool = True,
     sighashtype: str = 'ALL',
     bip32derivs: bool = True,
-) -> typing.Dict:
+) -> dict:
     return call('walletprocesspsbt', [psbt, sign, sighashtype, bip32derivs])

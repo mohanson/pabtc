@@ -1,5 +1,4 @@
 import io
-import typing
 
 
 # Integer can be encoded depending on the represented value to save space. Variable length integers always precede an
@@ -24,7 +23,7 @@ def decode(data: bytearray) -> int:
     return decode_reader(io.BytesIO(data))
 
 
-def decode_reader(reader: typing.BinaryIO) -> int:
+def decode_reader(reader: io.IOBase) -> int:
     head = reader.read(1)[0]
     if head <= 0xfc:
         return head

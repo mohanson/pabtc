@@ -5,7 +5,6 @@
 # Pure Python RIPEMD160 implementation. Note that this impelentation is not constant time.
 # Original source: https://github.com/bitcoin/bitcoin/pull/23716
 
-import typing
 
 # Message schedule indexes for the l path.
 ML = [
@@ -80,7 +79,7 @@ def function(x: int, y: int, z: int, i: int) -> int:
     raise Exception('unreachable')
 
 
-def compress(state: typing.List[int], block: typing.List[int]):
+def compress(state: list[int], block: list[int]):
     # Compress state with block."""
     # L path variables.
     h0 = state[0]

@@ -1,7 +1,6 @@
 import hashlib
 import pabtc.secp256k1
 import secrets
-import typing
 
 # Schnorr Signatures for secp256k1.
 # See: https://github.com/bitcoin/bips/blob/master/bip-0340.mediawiki
@@ -31,7 +30,7 @@ def hash(name: str, data: bytearray) -> bytearray:
     return out
 
 
-def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> typing.Tuple[pabtc.secp256k1.Pt, pabtc.secp256k1.Fr]:
+def sign(prikey: pabtc.secp256k1.Fr, m: pabtc.secp256k1.Fr) -> tuple[pabtc.secp256k1.Pt, pabtc.secp256k1.Fr]:
     # Sign message m with private key prikey.
     prikey = prikey_implicit(prikey)
     pubkey = pabtc.secp256k1.G * prikey

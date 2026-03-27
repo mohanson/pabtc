@@ -153,7 +153,7 @@ class Pt:
     def __pos__(self) -> Pt:
         return Pt(self.x, +self.y)
 
-    def json(self) -> typing.Dict[str, str]:
+    def json(self) -> dict[str, str]:
         return {
             'x': self.x.json(),
             'y': self.y.json(),

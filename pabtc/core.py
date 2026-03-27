@@ -17,7 +17,6 @@ import pabtc.rpc
 import pabtc.schnorr
 import pabtc.secp256k1
 import secrets
-import typing
 
 sighash_default = 0x00
 sighash_all = 0x01
@@ -72,7 +71,7 @@ class PriKey:
         # Convert the hex representation to private key.
         return PriKey(int.from_bytes(bytearray.fromhex(data)))
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         # Convert the private key to json representation.
         return {
             'n': f'{self.n:064x}',
@@ -87,7 +86,7 @@ class PriKey:
     def random(cls) -> PriKey:
         return PriKey(max(1, secrets.randbelow(pabtc.secp256k1.N)))
 
-    def sign_ecdsa(self, data: bytearray) -> typing.Tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr, int]:
+    def sign_ecdsa(self, data: bytearray) -> tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr, int]:
         # Sign a 32-byte data segment, returns the signature.
         assert len(data) == 32
         m = pabtc.secp256k1.Fr(int.from_bytes(data))
@@ -157,7 +156,7 @@ class PubKey:
         # Get the hash160 of the public key.
         return hash160(self.sec())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         # Convert the public key to json representation.
         return {
             'x': f'{self.x:064x}',
@@ -227,7 +226,7 @@ class ScriptPubKey:
         return data
 
     @classmethod
-    def p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+    def p2ms(cls, m: int, pubkey: list[PubKey]) -> bytearray:
         data = bytearray()
         data.append(pabtc.opcode.op_n(m))
         for e in pubkey:
@@ -246,7 +245,7 @@ class ScriptPubKey:
         return data
 
     @classmethod
-    def p2sh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+    def p2sh_p2ms(cls, m: int, pubkey: list[PubKey]) -> bytearray:
         redeem = cls.p2ms(m, pubkey)
         redeem_hash = hash160(redeem)
         return cls.p2sh(redeem_hash)
@@ -284,7 +283,7 @@ class ScriptPubKey:
         return data
 
     @classmethod
-    def p2wsh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+    def p2wsh_p2ms(cls, m: int, pubkey: list[PubKey]) -> bytearray:
         redeem = cls.p2ms(m, pubkey)
         redeem_hash = hashwsh(redeem)
         return cls.p2wsh(redeem_hash)
@@ -349,7 +348,7 @@ class ScriptSig:
         return data
 
     @classmethod
-    def p2ms(cls, sig: typing.List[bytearray]) -> bytearray:
+    def p2ms(cls, sig: list[bytearray]) -> bytearray:
         data = bytearray()
         # Due to a bug in the original bitcoin implementation, an extra op_0 is required.
         data.append(pabtc.opcode.op_0)
@@ -366,7 +365,7 @@ class ScriptSig:
         return data
 
     @classmethod
-    def p2sh_p2ms(cls, sig: typing.List[bytearray], m: int, pubkey: typing.List[PubKey]) -> bytearray:
+    def p2sh_p2ms(cls, sig: list[bytearray], m: int, pubkey: list[PubKey]) -> bytearray:
         script = cls.p2ms(sig)
         redeem = ScriptPubKey.p2ms(m, pubkey)
         return cls.p2sh(script, redeem)
@@ -404,7 +403,7 @@ class Address:
         return pabtc.base58.encode(data + chk4)
 
     @classmethod
-    def p2sh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> str:
+    def p2sh_p2ms(cls, m: int, pubkey: list[PubKey]) -> str:
         redeem = ScriptPubKey.p2ms(m, pubkey)
         redeem_hash = hash160(redeem)
         return cls.p2sh(redeem_hash)
@@ -434,7 +433,7 @@ class Address:
         return pabtc.bech32.encode_segwit_addr(pabtc.config.current.prefix.bech32, 0, redeem_hash)
 
     @classmethod
-    def p2wsh_p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> str:
+    def p2wsh_p2ms(cls, m: int, pubkey: list[PubKey]) -> str:
         redeem = ScriptPubKey.p2ms(m, pubkey)
         redeem_hash = hashwsh(redeem)
         return cls.p2wsh(redeem_hash)
@@ -553,7 +552,7 @@ class TapScript:
         return data
 
     @classmethod
-    def p2ms(cls, m: int, pubkey: typing.List[PubKey]) -> bytearray:
+    def p2ms(cls, m: int, pubkey: list[PubKey]) -> bytearray:
         data = bytearray()
         data.extend(pabtc.opcode.op_pushdata(bytearray(pubkey[0].x.to_bytes(32))))
         data.append(pabtc.opcode.op_checksig)
@@ -609,7 +608,7 @@ class OutPoint:
     def copy(self) -> OutPoint:
         return OutPoint(self.txid.copy(), self.vout)
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'txid': self.txid.hex(),
             'vout': self.vout,
@@ -633,7 +632,7 @@ class TxIn:
         out_point: OutPoint,
         script_sig: bytearray,
         sequence: int,
-        witness: typing.List[bytearray]
+        witness: list[bytearray]
     ) -> None:
         assert sequence >= 0
         assert sequence <= 0xffffffff
@@ -656,7 +655,7 @@ class TxIn:
     def copy(self) -> TxIn:
         return TxIn(self.out_point.copy(), self.script_sig.copy(), self.sequence, [e.copy() for e in self.witness])
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'out_point': self.out_point.json(),
             'script_sig': self.script_sig.hex(),
@@ -685,7 +684,7 @@ class TxOut:
     def copy(self) -> TxOut:
         return TxOut(self.value, self.script_pubkey.copy())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'value': self.value,
             'script_pubkey': self.script_pubkey.hex(),
@@ -696,7 +695,7 @@ class Transaction:
     # Referring to the design of Bitcoin core.
     # See: https://github.com/bitcoin/bitcoin/blob/master/src/primitives/transaction.h
 
-    def __init__(self, version: int, vin: typing.List[TxIn], vout: typing.List[TxOut], locktime: int) -> None:
+    def __init__(self, version: int, vin: list[TxIn], vout: list[TxOut], locktime: int) -> None:
         self.version = version
         self.vin = vin
         self.vout = vout
@@ -882,7 +881,7 @@ class Transaction:
         assert len(data) == size
         return hashtag('TapSighash', data)
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'version': self.version,
             'vin': [e.json() for e in self.vin],

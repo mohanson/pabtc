@@ -1,7 +1,6 @@
 import argparse
 import pabtc
 import secrets
-import typing
 
 # Shamir's secret sharing. See https://en.wikipedia.org/wiki/Shamir%27s_secret_sharing.
 # Usage:
@@ -19,7 +18,7 @@ args = parser.parse_args()
 Fq = pabtc.secp256k1.Fq
 
 
-def polysum(coeffs: typing.List[Fq], x: Fq) -> Fq:
+def polysum(coeffs: list[Fq], x: Fq) -> Fq:
     # Evaluate polynomial sum(coeffs[i] * x^i) mod P.
     rets = Fq.nil()
     xpow = Fq.one()
@@ -29,7 +28,7 @@ def polysum(coeffs: typing.List[Fq], x: Fq) -> Fq:
     return rets
 
 
-def produce(secret: Fq, m: int, n: int) -> typing.List[typing.List[Fq]]:
+def produce(secret: Fq, m: int, n: int) -> list[list[Fq]]:
     # Degree-(m-1) polynomial: f(x) = secret + a1*x + ... + a_{m-1}*x^{m-1}
     coeffs = [secret] + [Fq(secrets.randbelow(Fq.p - 1) + 1) for _ in range(m - 1)]
     shares = []
@@ -39,7 +38,7 @@ def produce(secret: Fq, m: int, n: int) -> typing.List[typing.List[Fq]]:
     return shares
 
 
-def recover(shares: typing.List[typing.List[Fq]]) -> Fq:
+def recover(shares: list[list[Fq]]) -> Fq:
     # Lagrange interpolation at x = 0 over Fq.
     secret = Fq.nil()
     k = len(shares)

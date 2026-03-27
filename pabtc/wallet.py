@@ -5,7 +5,6 @@ import pabtc.core
 import pabtc.denomination
 import pabtc.rpc
 import requests
-import typing
 
 
 class Analyzer:
@@ -47,7 +46,7 @@ class Utxo:
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'out_point': self.out_point.json(),
             'out': self.out.json(),
@@ -60,7 +59,7 @@ class SearcherCore:
     def __init__(self) -> None:
         pass
 
-    def unspent(self, addr: str) -> typing.List[Utxo]:
+    def unspent(self, addr: str) -> list[Utxo]:
         r = []
         for e in pabtc.rpc.list_unspent([addr]):
             out_point = pabtc.core.OutPoint(bytearray.fromhex(e['txid'])[::-1], e['vout'])
@@ -86,7 +85,7 @@ class SearcherMempoolSpace:
             return f'https://mempool.space/testnet/api/address/{addr}/utxo'
         raise Exception('unreachable')
 
-    def unspent(self, addr: str) -> typing.List[Utxo]:
+    def unspent(self, addr: str) -> list[Utxo]:
         r = []
         for e in requests.get(self.request(addr)).json():
             out_point = pabtc.core.OutPoint(bytearray.fromhex(e['txid'])[::-1], e['vout'])
@@ -103,7 +102,7 @@ class Searcher:
     def __init__(self) -> None:
         pass
 
-    def unspent(self, addr: str) -> typing.List[Utxo]:
+    def unspent(self, addr: str) -> list[Utxo]:
         if pabtc.config.current == pabtc.config.develop:
             return SearcherCore().unspent(addr)
         if pabtc.config.current == pabtc.config.mainnet:
@@ -121,7 +120,7 @@ class Signer(abc.ABC):
         self.script: bytearray
         self.addr: str
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {}
 
     @abc.abstractmethod
@@ -140,7 +139,7 @@ class Signerp2pkh(Signer):
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
@@ -157,7 +156,7 @@ class Signerp2pkh(Signer):
 
 
 class Signerp2shp2ms(Signer):
-    def __init__(self, prikey: typing.List[pabtc.core.PriKey], pubkey: typing.List[pabtc.core.PubKey]) -> None:
+    def __init__(self, prikey: list[pabtc.core.PriKey], pubkey: list[pabtc.core.PubKey]) -> None:
         self.prikey = prikey
         self.pubkey = pubkey
         self.redeem = pabtc.core.ScriptPubKey.p2ms(len(prikey), pubkey)
@@ -168,7 +167,7 @@ class Signerp2shp2ms(Signer):
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': [e.json() for e in self.prikey],
             'pubkey': [e.json() for e in self.pubkey],
@@ -198,7 +197,7 @@ class Signerp2shp2wpkh(Signer):
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
@@ -226,7 +225,7 @@ class Signerp2wpkh(Signer):
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
@@ -244,7 +243,7 @@ class Signerp2wpkh(Signer):
 
 
 class Signerp2wshp2ms(Signer):
-    def __init__(self, prikey: typing.List[pabtc.core.PriKey], pubkey: typing.List[pabtc.core.PubKey]) -> None:
+    def __init__(self, prikey: list[pabtc.core.PriKey], pubkey: list[pabtc.core.PubKey]) -> None:
         self.prikey = prikey
         self.pubkey = pubkey
         self.redeem = pabtc.core.ScriptPubKey.p2ms(len(prikey), pubkey)
@@ -255,7 +254,7 @@ class Signerp2wshp2ms(Signer):
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': [e.json() for e in self.prikey],
             'pubkey': [e.json() for e in self.pubkey],
@@ -291,7 +290,7 @@ class Signerp2tr(Signer):
     def __repr__(self) -> str:
         return json.dumps(self.json())
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return {
             'prikey': self.prikey.json(),
             'pubkey': self.pubkey.json(),
@@ -321,7 +320,7 @@ class Wallet:
     def balance(self) -> int:
         return sum([e.out.value for e in self.unspent()])
 
-    def json(self) -> typing.Dict:
+    def json(self) -> dict:
         return self.signer.json()
 
     def transfer(self, script: bytearray, value: int) -> bytearray:
@@ -373,5 +372,5 @@ class Wallet:
         txid = bytearray.fromhex(pabtc.rpc.send_raw_transaction(tx.serialize().hex()))[::-1]
         return txid
 
-    def unspent(self) -> typing.List[Utxo]:
+    def unspent(self) -> list[Utxo]:
         return self.search.unspent(self.addr)

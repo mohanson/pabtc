@@ -1,5 +1,4 @@
 import pabtc.secp256k1
-import typing
 
 # Der encoding. See: https://github.com/bitcoin/bips/blob/master/bip-0062.mediawiki#der-encoding
 # Brife format: 0x30 [total-length] 0x02 [R-length] [R] 0x02 [S-length] [S] [sighash-type]
@@ -26,7 +25,7 @@ def encode(r: pabtc.secp256k1.Fr, s: pabtc.secp256k1.Fr) -> bytearray:
     return head + body
 
 
-def decode(sign: bytearray) -> typing.Tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr]:
+def decode(sign: bytearray) -> tuple[pabtc.secp256k1.Fr, pabtc.secp256k1.Fr]:
     assert sign[0] == 0x30
     assert sign[1] == len(sign) - 2
     assert sign[2] == 0x02
