@@ -2,12 +2,7 @@
 
 ![img](./res/logo.jpg)
 
-Pabtc is a project that aims to provide human-friendly interfaces for common btc operations. Using pabtc, you can easily and happily complete everything you want to do on btc.
-
-Features:
-
-- No third-party dependencies, everything is visible.
-- Incredibly simple, even a cat knows how to use it.
+Pabtc is a project that aims to provide human-friendly interfaces for common Bitcoin operations. It's zero-dependency and pure-python, providing a secure and simple way to interact with the Bitcoin network. Whether you're a beginner looking to learn about Bitcoin or an experienced developer seeking a straightforward library, pabtc has got you covered.
 
 ## Installation
 
